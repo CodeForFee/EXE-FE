@@ -1,0 +1,325 @@
+@import "tailwindcss";
+
+@theme {
+  /* === DISTINCTIVE COLOR PALETTE === */
+  /* Deep forest greens with warmth */
+  --color-green-950: #0D1F1C;
+  --color-green-900: #14312D;
+  --color-green-800: #1A4A40;
+  --color-green-700: #236B55;
+  --color-green-600: #2D8B6A;
+  --color-green-500: #3AAB80;
+  --color-green-400: #5FCFA0;
+  --color-green-300: #8EDFBE;
+
+  /* Warm paper tones - editorial feel */
+  --color-main: #FAF7F2;
+  --color-secondary: #F0EBE0;
+  --color-accent: #E5DDD0;
+  --color-card: #FFFFFF;
+  --color-divider: #D8CFC0;
+
+  /* Rich wood tones */
+  --color-wood-light: #D4B896;
+  --color-wood-medium: #A67C52;
+  --color-wood-dark: #5C3D2E;
+
+  /* Editorial typography */
+  --color-heading: #1A1815;
+  --color-body: #3D3832;
+  --color-muted: #6B6358;
+  --color-inverse: #FAF7F2;
+
+  /* Accent colors */
+  --color-terracotta: #C4704F;
+  --color-olive: #7A8B5C;
+  --color-cream: #F5E6D3;
+
+  /* UI States */
+  --color-success: #3AAB80;
+  --color-warning: #D4A853;
+  --color-error: #C4574F;
+  --color-info: #5C7FA8;
+
+  /* Dramatic Shadows */
+  --shadow-soft: 0 2px 8px -2px rgba(26, 24, 21, 0.06);
+  --shadow-medium: 0 8px 30px -4px rgba(26, 24, 21, 0.12), 0 4px 12px -2px rgba(26, 24, 21, 0.06);
+  --shadow-hard: 0 25px 60px -12px rgba(26, 24, 21, 0.18), 0 12px 24px -8px rgba(26, 24, 21, 0.1);
+  --shadow-dramatic: 0 40px 80px -20px rgba(26, 24, 21, 0.25);
+
+  /* Font Families */
+  --font-heading: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Newsreader", Georgia, serif;
+
+  /* Animations */
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-grain: grain 0.5s steps(10) infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    33% {
+      transform: translateY(-8px) rotate(1deg);
+    }
+
+    66% {
+      transform: translateY(-4px) rotate(-1deg);
+    }
+  }
+
+  @keyframes grain {
+
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+
+    10% {
+      transform: translate(-2%, -2%);
+    }
+
+    20% {
+      transform: translate(2%, 2%);
+    }
+
+    30% {
+      transform: translate(-1%, 1%);
+    }
+
+    40% {
+      transform: translate(1%, -1%);
+    }
+
+    50% {
+      transform: translate(-2%, 2%);
+    }
+
+    60% {
+      transform: translate(2%, -2%);
+    }
+
+    70% {
+      transform: translate(-1%, -1%);
+    }
+
+    80% {
+      transform: translate(1%, 1%);
+    }
+
+    90% {
+      transform: translate(-2%, 1%);
+    }
+  }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes reveal-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+@layer utilities {
+
+  /* Glass effects */
+  .glass {
+    @apply bg-white/60 backdrop-blur-xl border border-white/30;
+  }
+
+  .glass-dark {
+    @apply bg-green-950/80 backdrop-blur-xl border border-white/10;
+  }
+
+  /* Editorial mesh gradient */
+  .mesh-gradient {
+    background: linear-gradient(135deg, #14312D 0%, #1A4A40 30%, #236B55 60%, #2D8B6A 100%);
+  }
+
+
+
+  /* Outline text for editorial headlines */
+  .outline-text {
+    -webkit-text-stroke: 1.5px currentColor;
+    color: transparent;
+  }
+
+  /* Diagonal stripe pattern */
+  .stripe-pattern {
+    background-image: repeating-linear-gradient(-45deg,
+        transparent,
+        transparent 2px,
+        rgba(26, 24, 21, 0.03) 2px,
+        rgba(26, 24, 21, 0.03) 4px);
+  }
+
+  /* Editorial divider */
+  .editorial-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .editorial-divider::before,
+  .editorial-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-divider), transparent);
+  }
+
+  /* Asymmetric hover lift */
+  .hover-lift {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-8px) rotate(-0.5deg);
+    box-shadow: var(--shadow-dramatic);
+  }
+
+  /* Scroll reveal animation */
+  .reveal {
+    animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Stagger delays */
+  .delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-3 {
+    animation-delay: 0.3s;
+  }
+
+  .delay-4 {
+    animation-delay: 0.4s;
+  }
+
+  .delay-5 {
+    animation-delay: 0.5s;
+  }
+
+  /* Editorial badge */
+  .editorial-badge {
+    @apply px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-[0.2em];
+    @apply bg-green-900 text-cream border border-green-700;
+  }
+
+  /* Decorative corner */
+  .corner-decoration::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 40px;
+    height: 40px;
+    border-top: 2px solid var(--color-green-600);
+    border-left: 2px solid var(--color-green-600);
+  }
+}
+
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-main text-body antialiased;
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-heading;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    @apply text-5xl md:text-7xl lg:text-8xl;
+    font-weight: 800;
+  }
+
+  h2 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p {
+    @apply text-body;
+    max-width: 65ch;
+  }
+
+  a {
+    @apply transition-colors duration-300;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-green-700);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-green-600);
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-green-600);
+    color: var(--color-inverse);
+  }
+}
