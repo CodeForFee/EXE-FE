@@ -9,6 +9,7 @@ import {
     UserResponse,
     VerifyTokenResponse
 } from '../types';
+import Cookies from 'js-cookie';
 
 export const authService = {
     register: async (request: RegistrationRequest): Promise<UserResponse> => {
@@ -19,25 +20,22 @@ export const authService = {
     login: async (request: AuthenticationRequest): Promise<AuthenticationResponse> => {
         const response = await apiClient.post<ApiResponse<AuthenticationResponse>>('/auth/login', request);
         if (response.data.data.token) {
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('accessToken', response.data.data.token);
-                // Optionally store user details
-                localStorage.setItem('user', JSON.stringify(response.data.data));
+            Cookies.set('accessToken', response.data.data.token, { expires: 7 });
+            if (response.data.data.userId) {
+                Cookies.set('userId', response.data.data.userId, { expires: 7 });
             }
         }
         return response.data.data;
     },
 
     refresh: async (refreshToken?: string): Promise<AuthenticationResponse> => {
-        // Note: Refresh token is typically handled via HTTP-only cookie by the backend, 
-        // so we might not need to pass it explicitly if the browser handles cookies.
-        // However, if the BE expects it in body or param, we pass it.
-        // Based on Controller: @CookieValue(value = "refresh_token", required = false) String refreshToken
-        // It seems it reads from Cookie. so we just make the call.
         const response = await apiClient.post<ApiResponse<AuthenticationResponse>>('/auth/refresh');
         if (response.data.data.token) {
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('accessToken', response.data.data.token);
+            Cookies.set('accessToken', response.data.data.token, { expires: 7 });
+            // Refresh usually doesn't return userId, but if it does, set it.
+            // AuthenticationResponse interface has userId.
+            if (response.data.data.userId) {
+                Cookies.set('userId', response.data.data.userId, { expires: 7 });
             }
         }
         return response.data.data;
@@ -50,10 +48,8 @@ export const authService = {
 
     logout: async (): Promise<void> => {
         await apiClient.post<ApiResponse<void>>('/auth/logout');
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-        }
+        Cookies.remove('accessToken');
+        Cookies.remove('userId');
     },
 
     introspect: async (request: IntrospectRequest): Promise<IntrospectTokenResponse> => {

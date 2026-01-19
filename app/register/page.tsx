@@ -14,9 +14,48 @@ import {
     GiftIcon,
     ChatBubbleOvalLeftEllipsisIcon,
     ArrowPathIcon,
+    MapPinIcon
 } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { useUserStore } from "@/lib/stores/useUserStore";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/api/services/auth";
 
 export default function RegisterPage() {
+    const router = useRouter();
+    const { register, isLoading, error, clearError } = useUserStore();
+
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [password, setPassword] = useState("");
+    const [address, setAddress] = useState("");
+    const [agreed, setAgreed] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!agreed) {
+            alert("Vui lòng đồng ý với điều khoản sử dụng");
+            return;
+        }
+
+        try {
+            await register({
+                fullName: `${firstName} ${lastName}`.trim(),
+                email,
+                phone,
+                password,
+                address
+            });
+            // Redirect to login or verification page
+            router.push('/login');
+            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        } catch (err) {
+            // Error is handled in store
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-main">
             <Header />
@@ -93,7 +132,19 @@ export default function RegisterPage() {
                                     </Link>
                                 </p>
 
-                                <form className="space-y-5">
+                                {error && (
+                                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm relative">
+                                        {error}
+                                        <button
+                                            onClick={clearError}
+                                            className="absolute top-0 right-0 p-2 text-red-500 hover:text-red-700"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                )}
+
+                                <form className="space-y-5" onSubmit={handleSubmit}>
                                     {/* Grid Họ & Tên */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -107,6 +158,9 @@ export default function RegisterPage() {
                                                     inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
                                                 }}
                                                 radius="none"
+                                                value={firstName}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                                isRequired
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -120,6 +174,9 @@ export default function RegisterPage() {
                                                     inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
                                                 }}
                                                 radius="none"
+                                                value={lastName}
+                                                onChange={(e) => setLastName(e.target.value)}
+                                                isRequired
                                             />
                                         </div>
                                     </div>
@@ -137,6 +194,9 @@ export default function RegisterPage() {
                                                 inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
                                             }}
                                             radius="none"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            isRequired
                                         />
                                     </div>
 
@@ -153,6 +213,27 @@ export default function RegisterPage() {
                                                 inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
                                             }}
                                             radius="none"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            isRequired
+                                        />
+                                    </div>
+
+                                    {/* Address */}
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
+                                            <MapPinIcon className="w-4 h-4" /> Địa chỉ
+                                        </label>
+                                        <Input
+                                            placeholder="123 Đường ABC, Phường X, Quận Y"
+                                            variant="bordered"
+                                            classNames={{
+                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
+                                            }}
+                                            radius="none"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            isRequired
                                         />
                                     </div>
 
@@ -169,13 +250,21 @@ export default function RegisterPage() {
                                                 inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
                                             }}
                                             radius="none"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            isRequired
                                         />
                                     </div>
 
                                     {/* CHECKBOX NGANG HÀNG CHUẨN */}
                                     <div className="flex items-start pt-2">
                                         <label className="relative flex items-center cursor-pointer select-none mt-0.5">
-                                            <input type="checkbox" className="sr-only peer" />
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={agreed}
+                                                onChange={(e) => setAgreed(e.target.checked)}
+                                            />
                                             <div className="w-5 h-5 border border-divider bg-white peer-checked:bg-green-800 peer-checked:border-green-800 transition-all flex items-center justify-center">
                                                 <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -191,8 +280,9 @@ export default function RegisterPage() {
                                         type="submit"
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all shadow-md"
                                         radius="none"
+                                        isLoading={isLoading}
                                     >
-                                        ĐĂNG KÝ NGAY
+                                        {isLoading ? "ĐANG XỬ LÝ..." : "ĐĂNG KÝ NGAY"}
                                     </Button>
                                 </form>
 
@@ -212,6 +302,7 @@ export default function RegisterPage() {
                                             variant="bordered"
                                             className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3"
                                             radius="none"
+                                            onClick={() => authService.googleLogin()}
                                         >
                                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

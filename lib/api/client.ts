@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -7,15 +8,15 @@ export const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // For handling cookies if needed, though we primarily use Bearer tokens usually
+    // withCredentials: false, // Disabled as we use Bearer token only
 });
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
     (config) => {
-        // Check if running in browser environment to access localStorage
+        // Check if running in browser environment (optional check if using Cookies package which handles window check safely usually, but good practice)
         if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('accessToken');
+            const token = Cookies.get('accessToken');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
@@ -41,13 +42,11 @@ apiClient.interceptors.response.use(
 
             try {
                 // Attempt to refresh token if we have a mechanism for it
-                // Ideally we call the refresh endpoint here. 
-                // For now, we might just redirect to login if refresh fails or isn't implemented automatically here yet.
-                // This can be expanded later.
+                // ...
             } catch (refreshError) {
                 // Clear tokens and redirect to login
                 if (typeof window !== 'undefined') {
-                    localStorage.removeItem('accessToken');
+                    Cookies.remove('accessToken');
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);

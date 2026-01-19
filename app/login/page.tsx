@@ -10,8 +10,28 @@ import {
     EnvelopeIcon,
     LockClosedIcon,
 } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { useUserStore } from "@/lib/stores/useUserStore";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/api/services/auth";
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { login, isLoading, error, clearError } = useUserStore();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await login({ email, password });
+            router.push('/'); // Redirect to home on success
+        } catch (err) {
+            // Error is handled in store and displayed via error state
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-main">
             <Header />
@@ -40,7 +60,19 @@ export default function LoginPage() {
                                     </Link>
                                 </p>
 
-                                <form className="space-y-6">
+                                {error && (
+                                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm relative">
+                                        {error}
+                                        <button
+                                            onClick={clearError}
+                                            className="absolute top-0 right-0 p-2 text-red-500 hover:text-red-700"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                )}
+
+                                <form className="space-y-6" onSubmit={handleSubmit}>
                                     {/* Email */}
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-heading font-bold text-muted uppercase tracking-widest flex items-center gap-2">
@@ -54,6 +86,9 @@ export default function LoginPage() {
                                                 inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-14"
                                             }}
                                             radius="none"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            isRequired
                                         />
                                     </div>
 
@@ -70,6 +105,9 @@ export default function LoginPage() {
                                                 inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-14"
                                             }}
                                             radius="none"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            isRequired
                                         />
                                     </div>
 
@@ -100,8 +138,9 @@ export default function LoginPage() {
                                         type="submit"
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all"
                                         radius="none"
+                                        isLoading={isLoading}
                                     >
-                                        ĐĂNG NHẬP
+                                        {isLoading ? "ĐANG XỬ LÝ..." : "ĐĂNG NHẬP"}
                                     </Button>
                                 </form>
 
@@ -121,6 +160,7 @@ export default function LoginPage() {
                                             variant="bordered"
                                             className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3"
                                             radius="none"
+                                            onClick={() => authService.googleLogin()}
                                         >
                                             {/* Giữ nguyên Logo Google SVG của bạn */}
                                             <svg className="w-5 h-5" viewBox="0 0 24 24">

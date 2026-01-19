@@ -83,7 +83,7 @@ export interface IntrospectTokenResponse {
 }
 
 export interface ChangePasswordRequest {
-    oldPassword?: string;
+    currentPassword?: string;
     newPassword?: string;
     confirmPassword?: string;
 }
