@@ -7,7 +7,9 @@ import {
     UsersIcon,
     ShoppingBagIcon,
     ClipboardDocumentListIcon,
-    Cog6ToothIcon
+    Cog6ToothIcon,
+    TagIcon,
+    TicketIcon
 } from "@heroicons/react/24/outline";
 
 export default function AdminSidebar() {
@@ -17,6 +19,8 @@ export default function AdminSidebar() {
         { name: "Overview", href: "/admin", icon: Squares2X2Icon },
         { name: "Users", href: "/admin/users", icon: UsersIcon },
         { name: "Products", href: "/admin/products", icon: ShoppingBagIcon },
+        { name: "Categories", href: "/admin/categories", icon: TagIcon },
+        { name: "Discounts", href: "/admin/discounts", icon: TicketIcon },
         { name: "Orders", href: "/admin/orders", icon: ClipboardDocumentListIcon },
         { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon },
     ];
@@ -49,8 +53,8 @@ export default function AdminSidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
-                                    ? "bg-green-900/50 text-cream shadow-sm border border-green-800/50"
-                                    : "text-cream/70 hover:bg-green-900/30 hover:text-cream"
+                                ? "bg-green-900/50 text-cream shadow-sm border border-green-800/50"
+                                : "text-cream/70 hover:bg-green-900/30 hover:text-cream"
                                 }`}
                         >
                             <Icon className={`w-5 h-5 ${isActive ? "text-cream" : "text-cream/70 group-hover:text-cream"}`} />

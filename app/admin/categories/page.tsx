@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { furnitureService } from "@/lib/api/services/furniture";
+import { categoryService } from "@/lib/api/services/category";
 import {
     Table,
     TableHeader,
@@ -10,54 +10,53 @@ import {
     TableRow,
     TableCell,
     User,
-    Chip,
-    Tooltip,
     Button,
     Spinner,
     Pagination,
+    Tooltip,
     useDisclosure
 } from "@heroui/react";
-import { EyeIcon, TrashIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Page, FurnitureResponse } from "@/lib/api/types";
-import ProductModal from "@/components/admin/modals/ProductModal";
+import { Page, CategoryResponse } from "@/lib/api/types";
+import CategoryModal from "@/components/admin/modals/CategoryModal";
 
-export default function AdminProductsPage() {
+export default function AdminCategoriesPage() {
     const [page, setPage] = useState(1);
     const queryClient = useQueryClient();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [selectedProduct, setSelectedProduct] = useState<FurnitureResponse | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<CategoryResponse | null>(null);
 
-    const { data, isLoading } = useQuery<Page<FurnitureResponse>>({
-        queryKey: ['admin', 'furniture', page],
-        queryFn: () => furnitureService.getAllFurniture(page - 1, 10),
+    const { data, isLoading } = useQuery<Page<CategoryResponse>>({
+        queryKey: ['admin', 'categories', page],
+        queryFn: () => categoryService.getAllCategories(page - 1, 10),
         placeholderData: keepPreviousData
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id: string) => furnitureService.deleteFurniture(id),
+        mutationFn: (id: string) => categoryService.deleteCategory(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'furniture'] });
-            toast.success("Product deleted successfully");
+            queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
+            toast.success("Category deleted successfully");
         },
         onError: () => {
-            toast.error("Failed to delete product");
+            toast.error("Failed to delete category");
         }
     });
 
-    const handleEdit = (product: FurnitureResponse) => {
-        setSelectedProduct(product);
+    const handleEdit = (category: CategoryResponse) => {
+        setSelectedCategory(category);
         onOpen();
     };
 
     const handleCreate = () => {
-        setSelectedProduct(null);
+        setSelectedCategory(null);
         onOpen();
     };
 
     const handleDelete = (id: string, name: string) => {
-        if (confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+        if (confirm(`Are you sure you want to delete category "${name}"?`)) {
             deleteMutation.mutate(id);
         }
     };
@@ -70,26 +69,9 @@ export default function AdminProductsPage() {
                 return (
                     <User
                         avatarProps={{ radius: "lg", src: item.image }}
-                        description={item.categoryName || "Uncategorized"}
                         name={item.name}
-                    >
-                        {item.name}
-                    </User>
-                );
-            case "price":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-sm">
-                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.finalPrice)}
-                        </p>
-                        {item.discountPercentage > 0 && <span className="text-xs text-danger line-through">Original: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}</span>}
-                    </div>
-                );
-            case "stock":
-                return (
-                    <Chip className="capitalize" color={item.stock > 0 ? "success" : "danger"} size="sm" variant="flat">
-                        {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
-                    </Chip>
+                        description={item.description}
+                    />
                 );
             case "actions":
                 return (
@@ -121,8 +103,8 @@ export default function AdminProductsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-heading text-green-950">Product Management</h1>
-                    <p className="text-muted mt-2">Manage your inventory, prices, and product details.</p>
+                    <h1 className="text-3xl font-heading font-bold text-heading text-green-950">Categories</h1>
+                    <p className="text-muted mt-2">Manage product categories.</p>
                 </div>
                 <Button
                     color="success"
@@ -131,7 +113,7 @@ export default function AdminProductsPage() {
                     startContent={<PlusIcon className="w-5 h-5" />}
                     onPress={handleCreate}
                 >
-                    Add Product
+                    Add Category
                 </Button>
             </div>
 
@@ -142,14 +124,12 @@ export default function AdminProductsPage() {
                     </div>
                 ) : (
                     <>
-                        <Table aria-label="Products table" removeWrapper color="success" selectionMode="none">
+                        <Table aria-label="Categories table" removeWrapper color="success" selectionMode="none">
                             <TableHeader>
-                                <TableColumn key="name">PRODUCT</TableColumn>
-                                <TableColumn key="price">PRICE</TableColumn>
-                                <TableColumn key="stock">STOCK</TableColumn>
+                                <TableColumn key="name">CATEGORY</TableColumn>
                                 <TableColumn key="actions" align="center">ACTIONS</TableColumn>
                             </TableHeader>
-                            <TableBody items={data?.content || []} emptyContent="No products found">
+                            <TableBody items={data?.content || []} emptyContent="No categories found">
                                 {(item: any) => (
                                     <TableRow key={item.id} className="border-b border-divider last:border-0 hover:bg-gray-50 transition-colors">
                                         {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
@@ -170,10 +150,10 @@ export default function AdminProductsPage() {
                 )}
             </div>
 
-            <ProductModal
+            <CategoryModal
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
-                productToEdit={selectedProduct}
+                categoryToEdit={selectedCategory}
             />
         </div>
     );
