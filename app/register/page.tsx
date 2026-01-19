@@ -20,10 +20,13 @@ import { useState } from "react";
 import { useUserStore } from "@/lib/stores/useUserStore";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/api/services/auth";
+import { useLoadingStore } from "@/lib/stores/useLoadingStore";
+import { toast } from "react-toastify";
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { register, isLoading, error, clearError } = useUserStore();
+    const { register, clearError } = useUserStore(); // removed isLoading, error
+    const { setIsLoading } = useLoadingStore();
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -36,10 +39,11 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!agreed) {
-            alert("Vui lòng đồng ý với điều khoản sử dụng");
+            toast.warning("Vui lòng đồng ý với điều khoản sử dụng");
             return;
         }
 
+        setIsLoading(true, "Đang đăng ký...");
         try {
             await register({
                 fullName: `${firstName} ${lastName}`.trim(),
@@ -49,10 +53,12 @@ export default function RegisterPage() {
                 address
             });
             // Redirect to login or verification page
+            toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+            setIsLoading(false);
             router.push('/login');
-            alert("Đăng ký thành công! Vui lòng đăng nhập.");
-        } catch (err) {
-            // Error is handled in store
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Đăng ký thất bại");
+            setIsLoading(false);
         }
     };
 
@@ -131,18 +137,6 @@ export default function RegisterPage() {
                                         Đăng nhập
                                     </Link>
                                 </p>
-
-                                {error && (
-                                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm relative">
-                                        {error}
-                                        <button
-                                            onClick={clearError}
-                                            className="absolute top-0 right-0 p-2 text-red-500 hover:text-red-700"
-                                        >
-                                            &times;
-                                        </button>
-                                    </div>
-                                )}
 
                                 <form className="space-y-5" onSubmit={handleSubmit}>
                                     {/* Grid Họ & Tên */}
@@ -280,9 +274,8 @@ export default function RegisterPage() {
                                         type="submit"
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all shadow-md"
                                         radius="none"
-                                        isLoading={isLoading}
                                     >
-                                        {isLoading ? "ĐANG XỬ LÝ..." : "ĐĂNG KÝ NGAY"}
+                                        ĐĂNG KÝ NGAY
                                     </Button>
                                 </form>
 

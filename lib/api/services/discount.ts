@@ -8,8 +8,13 @@ import {
 } from '../types';
 
 export const discountService = {
-    createDiscount: async (request: CreateDiscountRequest): Promise<DiscountResponse> => {
-        const response = await apiClient.post<ApiResponse<DiscountResponse>>('/discounts', request);
+    getAllDiscounts: async (): Promise<DiscountResponse[]> => {
+        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts');
+        return response.data.data;
+    },
+
+    getActiveDiscounts: async (): Promise<DiscountResponse[]> => {
+        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts/active');
         return response.data.data;
     },
 
@@ -18,13 +23,8 @@ export const discountService = {
         return response.data.data;
     },
 
-    getAllDiscounts: async (): Promise<DiscountResponse[]> => {
-        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts');
-        return response.data.data;
-    },
-
-    getActiveDiscounts: async (): Promise<DiscountResponse[]> => {
-        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts/active');
+    createDiscount: async (request: CreateDiscountRequest): Promise<DiscountResponse> => {
+        const response = await apiClient.post<ApiResponse<DiscountResponse>>('/discounts', request);
         return response.data.data;
     },
 

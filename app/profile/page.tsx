@@ -13,6 +13,7 @@ import {
     Divider
 } from "@heroui/react";
 import { useUserStore } from "@/lib/stores/useUserStore";
+import { useLoadingStore } from "@/lib/stores/useLoadingStore";
 import { UserRequest, UserResponse, ChangePasswordRequest } from "@/lib/api/types";
 import { userService } from "@/lib/api/services/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,9 +22,11 @@ import { ArrowLeft, CameraIcon, UserIcon, ShieldCheckIcon, UploadCloud } from "l
 import Link from "next/link";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function ProfilePage() {
     const { user, fetchUser } = useUserStore();
+    const { setIsLoading } = useLoadingStore();
     const queryClient = useQueryClient();
 
     // Local state for form fields to handle inputs
@@ -34,16 +37,11 @@ export default function ProfilePage() {
         image: ""
     });
 
-    const [isUploading, setIsUploading] = React.useState(false);
-
     const [passData, setPassData] = React.useState<ChangePasswordRequest>({
         currentPassword: "",
         newPassword: "",
         confirmPassword: ""
     });
-
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [message, setMessage] = React.useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     // Sync user data to form when user loads
     useEffect(() => {
@@ -63,7 +61,7 @@ export default function ProfilePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
+        setIsLoading(true, "Đang tải ảnh lên...");
         const formDataUpload = new FormData();
         formDataUpload.append("file", file);
         formDataUpload.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "your_unsigned_preset");
@@ -78,12 +76,12 @@ export default function ProfilePage() {
 
             const imageUrl = res.data.secure_url;
             setFormData(prev => ({ ...prev, image: imageUrl }));
-            setMessage({ type: 'success', text: "Tải ảnh lên thành công!" });
-        } catch (error) {
+            toast.success("Tải ảnh lên thành công!");
+        } catch (error: any) {
             console.error("Upload error:", error);
-            setMessage({ type: 'error', text: error.response?.data?.message || "Lỗi tải ảnh. Vui lòng kiểm tra cấu hình Cloudinary." });
+            toast.error(error.response?.data?.message || "Lỗi tải ảnh. Vui lòng kiểm tra cấu hình Cloudinary.");
         } finally {
-            setIsUploading(false);
+            setIsLoading(false);
         }
     };
 
@@ -93,12 +91,17 @@ export default function ProfilePage() {
             if (!user?.id) throw new Error("No user ID");
             return await userService.updateUser(user.id, data);
         },
+        onMutate: () => {
+            setIsLoading(true, "Đang cập nhật hồ sơ...");
+        },
         onSuccess: async (updatedUser) => {
-            setMessage({ type: 'success', text: "Cập nhật hồ sơ thành công!" });
+            toast.success("Cập nhật hồ sơ thành công!");
             await fetchUser(); // Refresh store
+            setIsLoading(false);
         },
         onError: (error: any) => {
-            setMessage({ type: 'error', text: error.response?.data?.message || "Cập nhật thất bại" });
+            toast.error(error.response?.data?.message || "Cập nhật thất bại");
+            setIsLoading(false);
         }
     });
 
@@ -108,13 +111,18 @@ export default function ProfilePage() {
             if (!user?.id) throw new Error("No user ID");
             return await userService.changePassword(user.id, data);
         },
+        onMutate: () => {
+            setIsLoading(true, "Đang đổi mật khẩu...");
+        },
         onSuccess: () => {
-            setMessage({ type: 'success', text: "Đổi mật khẩu thành công! Vui lòng đăng nhập lại." });
+            toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
             setPassData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+            setIsLoading(false);
             // Optionally logout user
         },
         onError: (error: any) => {
-            setMessage({ type: 'error', text: error.response?.data?.message || "Đổi mật khẩu thất bại" });
+            toast.error(error.response?.data?.message || "Đổi mật khẩu thất bại");
+            setIsLoading(false);
         }
     });
 
@@ -126,7 +134,7 @@ export default function ProfilePage() {
     const handleChangePassword = (e: React.FormEvent) => {
         e.preventDefault();
         if (passData.newPassword !== passData.confirmPassword) {
-            setMessage({ type: 'error', text: "Mật khẩu xác nhận không khớp" });
+            toast.error("Mật khẩu xác nhận không khớp");
             return;
         }
         changePasswordMutation.mutate(passData);
@@ -182,14 +190,8 @@ export default function ProfilePage() {
                                             className="hidden"
                                             accept="image/*"
                                             onChange={handleImageUpload}
-                                            disabled={isUploading}
                                         />
                                     </label>
-                                    {isUploading && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <h2 className="text-2xl font-heading font-bold text-green-900 mt-2">{user.fullName}</h2>
@@ -294,12 +296,6 @@ export default function ProfilePage() {
                                                 />
                                             </div>
 
-                                            {message && (
-                                                <div className={`p-3 rounded-lg text-sm font-medium ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {message.text}
-                                                </div>
-                                            )}
-
                                             <div className="flex justify-end pt-4">
                                                 <Button
                                                     type="submit"
@@ -363,12 +359,6 @@ export default function ProfilePage() {
                                                     }}
                                                 />
                                             </div>
-
-                                            {message && (
-                                                <div className={`p-3 rounded-lg text-sm font-medium ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {message.text}
-                                                </div>
-                                            )}
 
                                             <div className="flex justify-start pt-4">
                                                 <Button

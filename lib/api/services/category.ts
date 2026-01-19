@@ -8,8 +8,20 @@ import {
 } from '../types';
 
 export const categoryService = {
-    createCategory: async (request: CreateCategoryRequest): Promise<CategoryResponse> => {
-        const response = await apiClient.post<ApiResponse<CategoryResponse>>('/category', request);
+    getAllCategories: async (
+        page = 0,
+        size = 10,
+        sortBy = 'name',
+        sortDir = 'ASC'
+    ): Promise<Page<CategoryResponse>> => {
+        const response = await apiClient.get<ApiResponse<Page<CategoryResponse>>>(
+            `/category?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
+        );
+        return response.data.data;
+    },
+
+    getAllCategoriesNoPaging: async (): Promise<CategoryResponse[]> => {
+        const response = await apiClient.get<ApiResponse<CategoryResponse[]>>('/category/all');
         return response.data.data;
     },
 
@@ -18,24 +30,8 @@ export const categoryService = {
         return response.data.data;
     },
 
-    getAllCategories: async (
-        page = 0,
-        size = 10,
-        sortBy = 'name',
-        sortDir = 'ASC'
-    ): Promise<Page<CategoryResponse>> => {
-        const params = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sortBy,
-            sortDir
-        });
-        const response = await apiClient.get<ApiResponse<Page<CategoryResponse>>>(`/category?${params.toString()}`);
-        return response.data.data;
-    },
-
-    getAllCategoriesNoPaging: async (): Promise<CategoryResponse[]> => {
-        const response = await apiClient.get<ApiResponse<CategoryResponse[]>>('/category/all');
+    createCategory: async (request: CreateCategoryRequest): Promise<CategoryResponse> => {
+        const response = await apiClient.post<ApiResponse<CategoryResponse>>('/category', request);
         return response.data.data;
     },
 

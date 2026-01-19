@@ -14,21 +14,28 @@ import { useState } from "react";
 import { useUserStore } from "@/lib/stores/useUserStore";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/api/services/auth";
+import { useLoadingStore } from "@/lib/stores/useLoadingStore";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, isLoading, error, clearError } = useUserStore();
+    const { login, clearError } = useUserStore(); // removed isLoading, error from destruct
+    const { setIsLoading } = useLoadingStore();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true, "Đang đăng nhập...");
         try {
             await login({ email, password });
+            toast.success("Đăng nhập thành công!");
+            setIsLoading(false);
             router.push('/'); // Redirect to home on success
-        } catch (err) {
-            // Error is handled in store and displayed via error state
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Đăng nhập thất bại");
+            setIsLoading(false);
         }
     };
 
@@ -59,18 +66,6 @@ export default function LoginPage() {
                                         Đăng ký ngay
                                     </Link>
                                 </p>
-
-                                {error && (
-                                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm relative">
-                                        {error}
-                                        <button
-                                            onClick={clearError}
-                                            className="absolute top-0 right-0 p-2 text-red-500 hover:text-red-700"
-                                        >
-                                            &times;
-                                        </button>
-                                    </div>
-                                )}
 
                                 <form className="space-y-6" onSubmit={handleSubmit}>
                                     {/* Email */}
@@ -138,9 +133,8 @@ export default function LoginPage() {
                                         type="submit"
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all"
                                         radius="none"
-                                        isLoading={isLoading}
                                     >
-                                        {isLoading ? "ĐANG XỬ LÝ..." : "ĐĂNG NHẬP"}
+                                        ĐĂNG NHẬP
                                     </Button>
                                 </form>
 

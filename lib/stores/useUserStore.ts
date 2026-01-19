@@ -25,8 +25,20 @@ export const useUserStore = create<UserState>((set) => ({
         set({ isLoading: true, error: null });
         try {
             const authResponse = await authService.login(request);
-            // After login, we can use the data from response OR fetch fresh data.
-            // Using response data is faster.
+
+            // Fix: Fetch full user profile immediately to get the image
+            // The initial login response might be missing the image field
+            if (authResponse.userId) {
+                try {
+                    const fullUser = await userService.getUserById(authResponse.userId);
+                    set({ user: fullUser, isLoading: false });
+                    return;
+                } catch (fetchError) {
+                    console.error("Failed to fetch full user details after login", fetchError);
+                }
+            }
+
+            // Fallback: use response data if fetch fails
             const user: UserResponse = {
                 id: authResponse.userId,
                 fullName: authResponse.fullName,

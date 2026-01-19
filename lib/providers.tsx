@@ -36,7 +36,7 @@ export function Providers({ children }: { children: ReactNode }) {
             {children}
           </AuthInitializer>
           <ReactQueryDevtools initialIsOpen={false} />
-          <ToastContainer position="bottom-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={3000} />
         </QueryClientProvider>
       </NextThemesProvider>
     </HeroUIProvider>
