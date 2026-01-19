@@ -107,16 +107,17 @@ export interface UserRequest {
 
 // Furniture Models
 export interface FurnitureResponse {
-    id: string; // UUID
+    furnitureId: string; // UUID - Backend uses furnitureId, not id
     name: string;
-    description: string;
+    description?: string;
     price: number;
     finalPrice: number;
     stock: number;
-    image: string; // List of images often? Or single? Based on BE response it's likely a primary image or list. Need to check details if list. BE returns FurnitureResponse. 
-    // Wait, let's check FurnitureResponse in BE.
+    image?: string; // May come from images array or separate field
     categoryId: string; // UUID
     categoryName: string;
+    status: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
+    hasDiscount?: boolean;
     discountPercentage?: number;
     createdAt: string;
     updatedAt: string;
@@ -129,6 +130,7 @@ export interface CreateFurnitureRequest {
     stock: number;
     categoryId: string; // UUID
     images: string[]; // Usually handled via separate upload or list of URLs
+    status: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
 }
 
 export interface UpdateFurnitureRequest {
@@ -138,15 +140,18 @@ export interface UpdateFurnitureRequest {
     stock?: number;
     categoryId?: string; // UUID
     images?: string[];
+    status?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
 }
 
 
 // Category Models
 export interface CategoryResponse {
-    id: string; // UUID
+    categoryId: string; // UUID
     name: string;
-    description: string;
-    image: string;
+    description?: string; // Optional if missing from current DTO
+    image?: string;       // Optional if missing from current DTO
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface CreateCategoryRequest {

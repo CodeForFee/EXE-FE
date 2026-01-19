@@ -16,6 +16,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { categoryService } from "@/lib/api/services/category";
 import { toast } from "react-toastify";
 import { CreateCategoryRequest, CategoryResponse, UpdateCategoryRequest } from "@/lib/api/types";
+import ImageUpload from "@/components/common/ImageUpload";
 
 interface CategoryModalProps {
     isOpen: boolean;
@@ -30,8 +31,8 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
     useEffect(() => {
         if (categoryToEdit) {
             setValue("name", categoryToEdit.name);
-            setValue("description", categoryToEdit.description);
-            setValue("image", categoryToEdit.image);
+            setValue("description", categoryToEdit.description || "");
+            setValue("image", categoryToEdit.image || "");
         } else {
             reset({
                 name: "",
@@ -55,7 +56,7 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: UpdateCategoryRequest) => categoryService.updateCategory(categoryToEdit!.id, data),
+        mutationFn: (data: UpdateCategoryRequest) => categoryService.updateCategory(categoryToEdit!.categoryId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
             toast.success("Category updated successfully");
@@ -75,7 +76,14 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
     };
 
     return (
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <Modal
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            placement="center"
+            backdrop="blur"
+            size="lg"
+            scrollBehavior="inside"
+        >
             <ModalContent>
                 {(onClose) => (
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -83,34 +91,37 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
                             {categoryToEdit ? "Edit Category" : "Add New Category"}
                         </ModalHeader>
                         <ModalBody>
-                            <Input
-                                {...register("name", { required: "Name is required" })}
-                                label="Category Name"
-                                placeholder="e.g., Living Room"
-                                variant="bordered"
-                                errorMessage={errors.name?.message}
-                                isInvalid={!!errors.name}
-                                classNames={{ inputWrapper: "bg-white" }}
-                            />
+                            <div className="space-y-6 border border-divider p-6 rounded-lg bg-gray-50/30">
+                                <div className="p-2 border border-dashed border-divider rounded-lg bg-white">
+                                    <ImageUpload
+                                        label="Category Image"
+                                        value={categoryToEdit?.image || ""}
+                                        onChange={(url) => setValue("image", url)}
+                                    />
+                                </div>
 
-                            <Textarea
-                                {...register("description", { required: "Description is required" })}
-                                label="Description"
-                                placeholder="Category description..."
-                                variant="bordered"
-                                errorMessage={errors.description?.message}
-                                isInvalid={!!errors.description}
-                                classNames={{ inputWrapper: "bg-white" }}
-                            />
+                                <Input
+                                    {...register("name", { required: "Name is required" })}
+                                    label="Category Name"
+                                    placeholder="e.g., Living Room"
+                                    variant="bordered"
+                                    errorMessage={errors.name?.message}
+                                    isInvalid={!!errors.name}
+                                    labelPlacement="outside"
+                                    classNames={{ inputWrapper: "bg-white" }}
+                                />
 
-                            <Input
-                                {...register("image")}
-                                label="Image URL"
-                                placeholder="https://example.com/cat-image.jpg"
-                                variant="bordered"
-                                classNames={{ inputWrapper: "bg-white" }}
-                            />
-
+                                <Textarea
+                                    {...register("description", { required: "Description is required" })}
+                                    label="Description"
+                                    placeholder="Category description..."
+                                    variant="bordered"
+                                    errorMessage={errors.description?.message}
+                                    isInvalid={!!errors.description}
+                                    labelPlacement="outside"
+                                    classNames={{ inputWrapper: "bg-white" }}
+                                />
+                            </div>
                         </ModalBody>
                         <ModalFooter>
                             <Button color="danger" variant="light" onPress={onClose}>

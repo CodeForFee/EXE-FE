@@ -43,7 +43,7 @@ export default function AdminHeader() {
                 {/* Profile Dropdown */}
                 <Dropdown placement="bottom-end">
                     <DropdownTrigger>
-                        <button className="flex items-center gap-3 outline-none group">
+                        <div className="flex items-center gap-3 outline-none group cursor-pointer">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-bold text-heading leading-tight group-hover:text-green-800 transition-colors">
                                     {user?.fullName || "Admin User"}
@@ -54,14 +54,13 @@ export default function AdminHeader() {
                             </div>
                             <Avatar
                                 isBordered
-                                as="button"
                                 className="transition-transform group-hover:scale-105 ring-2 ring-offset-2 ring-transparent group-hover:ring-green-100"
                                 color="success"
-                                name={user?.fullName ? user.fullName.charAt(0).toUpperCase() : "A"}
+                                name={user?.fullName?.charAt(0) || "A"}
                                 size="sm"
                                 src={user?.image}
                             />
-                        </button>
+                        </div>
                     </DropdownTrigger>
                     <DropdownMenu aria-label="Profile Actions" variant="flat" className="p-2">
                         <DropdownItem key="profile" className="h-14 gap-2" textValue="Signed in as">

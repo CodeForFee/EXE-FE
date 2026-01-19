@@ -108,7 +108,14 @@ export default function DiscountModal({ isOpen, onOpenChange, discountToEdit }: 
     };
 
     return (
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <Modal
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            placement="center"
+            backdrop="blur"
+            size="lg"
+            scrollBehavior="inside"
+        >
             <ModalContent>
                 {(onClose) => (
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -116,50 +123,57 @@ export default function DiscountModal({ isOpen, onOpenChange, discountToEdit }: 
                             {discountToEdit ? "Edit Discount" : "Add New Discount"}
                         </ModalHeader>
                         <ModalBody>
-                            <Textarea
-                                {...register("description", { required: "Description is required" })}
-                                label="Description"
-                                placeholder="Discount description (e.g., Summer Sale)"
-                                variant="bordered"
-                                errorMessage={errors.description?.message}
-                                isInvalid={!!errors.description}
-                                classNames={{ inputWrapper: "bg-white" }}
-                            />
-
-                            <Input
-                                {...register("percentage", { required: "Percentage is required", min: 0, max: 100 })}
-                                label="Percentage (%)"
-                                placeholder="10"
-                                type="number"
-                                step="0.01"
-                                variant="bordered"
-                                errorMessage={errors.percentage?.message}
-                                isInvalid={!!errors.percentage}
-                                description="Enter value between 0 and 100"
-                                classNames={{ inputWrapper: "bg-white" }}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    {...register("startDate", { required: "Start Date is required" })}
-                                    label="Start Date"
-                                    type="date"
+                            <div className="space-y-6 border border-divider p-6 rounded-lg bg-gray-50/30">
+                                <Textarea
+                                    {...register("description", { required: "Description is required" })}
+                                    label="Description"
+                                    placeholder="Discount description (e.g., Summer Sale)"
                                     variant="bordered"
-                                    errorMessage={errors.startDate?.message}
-                                    isInvalid={!!errors.startDate}
+                                    errorMessage={errors.description?.message}
+                                    isInvalid={!!errors.description}
+                                    labelPlacement="outside"
                                     classNames={{ inputWrapper: "bg-white" }}
                                 />
+
                                 <Input
-                                    {...register("endDate", { required: "End Date is required" })}
-                                    label="End Date"
-                                    type="date"
+                                    {...register("percentage", { required: "Percentage is required", min: 0, max: 100 })}
+                                    label="Percentage (%)"
+                                    placeholder="10"
+                                    type="number"
+                                    step="0.01"
                                     variant="bordered"
-                                    errorMessage={errors.endDate?.message}
-                                    isInvalid={!!errors.endDate}
+                                    errorMessage={errors.percentage?.message}
+                                    isInvalid={!!errors.percentage}
+                                    description="Enter value between 0 and 100"
+                                    labelPlacement="outside"
                                     classNames={{ inputWrapper: "bg-white" }}
                                 />
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <Input
+                                        {...register("startDate", { required: "Start Date is required" })}
+                                        label="Start Date"
+                                        type="date"
+                                        variant="bordered"
+                                        errorMessage={errors.startDate?.message}
+                                        isInvalid={!!errors.startDate}
+                                        labelPlacement="outside"
+                                        placeholder=" "
+                                        classNames={{ inputWrapper: "bg-white" }}
+                                    />
+                                    <Input
+                                        {...register("endDate", { required: "End Date is required" })}
+                                        label="End Date"
+                                        type="date"
+                                        variant="bordered"
+                                        errorMessage={errors.endDate?.message}
+                                        isInvalid={!!errors.endDate}
+                                        labelPlacement="outside"
+                                        placeholder=" "
+                                        classNames={{ inputWrapper: "bg-white" }}
+                                    />
+                                </div>
                             </div>
-
                         </ModalBody>
                         <ModalFooter>
                             <Button color="danger" variant="light" onPress={onClose}>

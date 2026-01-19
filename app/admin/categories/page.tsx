@@ -68,9 +68,9 @@ export default function AdminCategoriesPage() {
             case "name":
                 return (
                     <User
-                        avatarProps={{ radius: "lg", src: item.image }}
+                        avatarProps={{ radius: "lg", src: item.image || "" }}
                         name={item.name}
-                        description={item.description}
+                        description={item.description || "No description"}
                     />
                 );
             case "actions":
@@ -87,7 +87,7 @@ export default function AdminCategoriesPage() {
                         <Tooltip color="danger" content="Delete">
                             <span
                                 className="text-lg text-danger cursor-pointer active:opacity-50 hover:text-red-700 transition-colors"
-                                onClick={() => handleDelete(item.id, item.name)}
+                                onClick={() => handleDelete(item.categoryId, item.name)}
                             >
                                 <TrashIcon className="w-5 h-5" />
                             </span>
@@ -131,7 +131,7 @@ export default function AdminCategoriesPage() {
                             </TableHeader>
                             <TableBody items={data?.content || []} emptyContent="No categories found">
                                 {(item: any) => (
-                                    <TableRow key={item.id} className="border-b border-divider last:border-0 hover:bg-gray-50 transition-colors">
+                                    <TableRow key={item.categoryId}>
                                         {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                                     </TableRow>
                                 )}
