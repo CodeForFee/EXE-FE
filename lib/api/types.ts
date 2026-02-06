@@ -115,6 +115,7 @@ export interface FurnitureResponse {
     finalPrice: number;
     stock: number;
     image?: string; // May come from images array or separate field
+    primaryImageUrl: string | null;
     categoryId: string; // UUID
     categoryName: string;
     status: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
@@ -131,6 +132,7 @@ export interface CreateFurnitureRequest {
     stock: number;
     categoryId: string; // UUID
     images: string[]; // Usually handled via separate upload or list of URLs
+    primaryImageUrl?: string;
     status: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
 }
 
@@ -140,9 +142,27 @@ export interface UpdateFurnitureRequest {
     price?: number;
     stock?: number;
     categoryId?: string; // UUID
+    // images and primaryImageUrl are now handled via separate endpoints but kept here if backend supports legacy mode
     images?: string[];
+    primaryImageUrl?: string;
     status?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
 }
+
+export interface FurnitureImageResponse {
+    imageId: string;
+    imageUrl: string;
+    isPrimary: boolean;
+    displayOrder: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface AddFurnitureImageRequest {
+    imageUrl: string;
+    isPrimary: boolean;
+    displayOrder: number;
+}
+
 
 
 // Category Models

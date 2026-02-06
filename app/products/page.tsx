@@ -58,8 +58,8 @@ export default function ProductsPage() {
         price: p.finalPrice || p.price,
         originalPrice: p.price !== p.finalPrice ? p.price : undefined,
         discount: p.discountPercentage,
-        image: p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", // Fallback image
-        images: p.image ? [p.image] : ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800"], // Create array
+        image: p.primaryImageUrl || p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", // Fallback image
+        images: p.primaryImageUrl ? [p.primaryImageUrl] : (p.image ? [p.image] : ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800"]), // Create array
         rating: 5, // Mock default
         reviews: 0, // Mock default
         badge: p.discountPercentage ? "Giảm giá" : undefined, // Mock badge

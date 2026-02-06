@@ -26,7 +26,7 @@ const mapFurnitureToHomeProduct = (p: FurnitureResponse): HomeProduct => ({
   title: p.name,
   price: p.finalPrice ?? p.price,
   originalPrice: p.finalPrice && p.finalPrice !== p.price ? p.price : undefined,
-  image: p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800",
+  image: p.primaryImageUrl || p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800",
   badge: p.discountPercentage ? "Giảm giá" : undefined,
   rating: 5,
   shortDescription: p.description ? `${p.description.substring(0, 80)}...` : undefined,
