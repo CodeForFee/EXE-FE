@@ -107,6 +107,7 @@ export interface UserRequest {
 
 // Furniture Models
 export interface FurnitureResponse {
+    id: any;
     furnitureId: string; // UUID - Backend uses furnitureId, not id
     name: string;
     description?: string;

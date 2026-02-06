@@ -25,8 +25,9 @@ import {
     TicketIcon,
     CalendarDaysIcon,
     ArrowPathIcon,
-    ChatBubbleLeftIcon,
-    EyeIcon
+    // ChatBubbleLeftIcon,
+    EyeIcon,
+    ArrowTrendingUpIcon
 } from "@heroicons/react/24/outline";
 import { StarIcon, HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import { products as allProducts } from "@/lib/data/products";

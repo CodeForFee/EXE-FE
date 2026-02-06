@@ -25,7 +25,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 unreadCount: data.totalElements,
                 isLoading: false
             });
-        } catch (error) {
+        } catch (error: unknown) {
             set({ isLoading: false });
         }
     },
@@ -39,7 +39,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 notifications: notifications.filter(n => n.id !== id),
                 unreadCount: Math.max(0, unreadCount - 1)
             });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Failed to mark as read", error);
         }
     }

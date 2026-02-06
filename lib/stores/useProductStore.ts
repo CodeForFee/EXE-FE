@@ -24,7 +24,7 @@ interface ProductState {
     // Actions
     fetchProducts: () => Promise<void>;
     fetchCategories: () => Promise<void>;
-    setFilter: (key: keyof ProductState['filters'], value: any) => void;
+    setFilter: (key: keyof ProductState['filters'], value: string | null) => void;
     setPage: (page: number) => void;
 }
 
@@ -69,7 +69,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
                     size: list.length,
                     number: 0,
                     // ... other page fields mocked
-                    pageable: {} as any, last: true, first: true, numberOfElements: list.length, empty: list.length === 0, sort: { empty: true, sorted: false, unsorted: true }
+                    pageable: {} as Page<FurnitureResponse>['pageable'], last: true, first: true, numberOfElements: list.length, empty: list.length === 0, sort: { empty: true, sorted: false, unsorted: true }
                 };
             } else {
                 // Get all with paging
@@ -90,8 +90,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
                 },
                 isLoading: false
             });
-        } catch (error: any) {
-            set({ error: error.message || 'Failed to fetch products', isLoading: false });
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products';
+            set({ error: errorMessage, isLoading: false });
         }
     },
 
@@ -99,7 +100,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         try {
             const data = await categoryService.getAllCategoriesNoPaging();
             set({ categories: data });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to fetch categories", error);
         }
     },

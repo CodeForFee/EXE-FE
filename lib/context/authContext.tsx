@@ -33,7 +33,7 @@ export const AuthProvider = ({
             // Case 1: Has both access token and refresh token → OK, hydrate normally
             if (initialAccessToken && initialRefreshToken) {
                 setSession({ accessToken: initialAccessToken, refreshToken: initialRefreshToken });
-                
+
                 // Fetch full user profile to get image and other details
                 const user = useSessionStore.getState().user;
                 if (user?.id) {
@@ -44,7 +44,7 @@ export const AuthProvider = ({
                         console.error("Failed to fetch full user profile:", error);
                     }
                 }
-                
+
                 setIsHydrated(true);
                 return;
             }
@@ -83,9 +83,9 @@ export const AuthProvider = ({
                     }
 
                     // Set in Zustand store
-                    setSession({ 
-                        accessToken: newAccessToken, 
-                        refreshToken: initialRefreshToken 
+                    setSession({
+                        accessToken: newAccessToken,
+                        refreshToken: initialRefreshToken
                     });
 
                     // Fetch full user profile after refresh
@@ -121,7 +121,7 @@ export const AuthProvider = ({
         };
 
         initializeAuth();
-    }, [initialAccessToken, initialRefreshToken, setSession]);
+    }, [initialAccessToken, initialRefreshToken, setSession, updateUser]);
 
     // Show loading while hydrating or refreshing
     if (!isHydrated || isRefreshing) {

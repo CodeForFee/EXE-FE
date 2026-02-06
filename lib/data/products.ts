@@ -25,7 +25,7 @@ export interface Combo {
     name: string;
     description: string;
     items: {
-        Icon: any; // Using any for icons to avoid complex type issues in data file
+        Icon: React.ElementType | null; // Using specific type for icons
         name: string;
     }[];
     originalPrice: number;

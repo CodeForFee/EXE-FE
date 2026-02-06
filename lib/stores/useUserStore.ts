@@ -34,7 +34,7 @@ export const useUserStore = (): UserState => {
         user: sessionUser,
         isLoading: false,
         error: null,
-        
+
         setUser: (user: UserResponse | null) => {
             // Not supported in new auth system
             console.warn('setUser is deprecated. User is managed through session tokens.');
@@ -44,7 +44,7 @@ export const useUserStore = (): UserState => {
             try {
                 // Step 1: Login to backend
                 const authResponse = await authService.loginClient(request);
-                
+
                 // Step 2: Set httpOnly cookies via API route
                 await authService.loginServer({
                     accessToken: authResponse.token,
@@ -56,7 +56,7 @@ export const useUserStore = (): UserState => {
                     accessToken: authResponse.token,
                     refreshToken: authResponse.token
                 });
-            } catch (err: any) {
+            } catch (err: unknown) {
                 throw err;
             }
         },
@@ -64,7 +64,7 @@ export const useUserStore = (): UserState => {
         register: async (request: RegistrationRequest) => {
             try {
                 await authService.register(request);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 throw err;
             }
         },
@@ -73,13 +73,13 @@ export const useUserStore = (): UserState => {
             try {
                 // Clear backend session
                 await authService.logoutClient();
-                
+
                 // Clear server-side cookies
                 await authService.logoutServer();
-                
+
                 // Clear client-side session
                 clearSession();
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error('Logout error:', error);
                 // Clear session anyway
                 clearSession();
@@ -99,7 +99,7 @@ export const useUserStore = (): UserState => {
                     const fullUser = await userService.getUserById(sessionUser.id);
                     // Update would require re-encoding JWT, which we don't do client-side
                     console.log('User fetched:', fullUser);
-                } catch (err) {
+                } catch (err: unknown) {
                     console.error("Failed to fetch user profile", err);
                 }
             }

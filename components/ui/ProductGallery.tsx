@@ -1,7 +1,7 @@
-\"use client\";\r
-\r
-import { useState } from \"react\";\r
-import { motion, AnimatePresence } from \"framer-motion\";\r
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ProductGalleryProps {
     images: string[];

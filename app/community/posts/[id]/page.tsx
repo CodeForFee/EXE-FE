@@ -209,7 +209,7 @@ export default function CommunityPostDetailPage() {
                         <div key={c.id} className="border-b border-divider/60 pb-3 last:border-0">
                           <div className="flex items-center justify-between gap-2 mb-1">
                             <div className="flex items-center gap-2">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              { }
                               {c.userImage && (
                                 <img
                                   src={c.userImage}
