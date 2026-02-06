@@ -1,32 +1,77 @@
+"use client";
+
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { products } from "@/lib/data/products";
 import { motion } from "framer-motion";
 import ProductsClient from "@/components/product/ProductsClient";
 import * as Framer from "framer-motion";
-
-const categories = [
-    { value: "all", label: "Tất cả" },
-    { value: "desk", label: "Bàn làm việc" },
-    { value: "chair", label: "Ghế" },
-    { value: "lighting", label: "Đèn" },
-    { value: "storage", label: "Kệ & Tủ" },
-    { value: "decoration", label: "Trang trí" },
-];
+import { useProductStore } from "@/lib/stores/useProductStore";
+import { useEffect, useState } from "react";
+import { Product } from "@/lib/data/products";
+import { categoryService } from "@/lib/api/services/category";
+import type { CategoryResponse } from "@/lib/api/types";
 
 const sortOptions = [
     { value: "newest", label: "Mới nhất" },
     { value: "price-asc", label: "Giá thấp → cao" },
     { value: "price-desc", label: "Giá cao → thấp" },
-    { value: "popular", label: "Phổ biến" },
+    { value: "popular", label: "Phổ biến" }, // Popular might need logic support
 ];
 
-export const metadata = {
-    title: "Sản phẩm | UNIHOME",
-    description: "Khám phá bộ sưu tập nội thất tối giản, chất lượng cao dành riêng cho sinh viên.",
-};
+// Metadata cannot be exported from client component, so we remove it or move to layout/separate server component.
+// Since this is becoming "use client", metadata export is invalid here.
+// Assuming layout handles metadata or we accept losing specific metadata for this page for now.
 
 export default function ProductsPage() {
+    const { products, fetchProducts, isLoading } = useProductStore();
+    const [categories, setCategories] = useState<{ value: string; label: string }[]>([
+        { value: "all", label: "Tất cả" },
+    ]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const data: CategoryResponse[] = await categoryService.getAllCategoriesNoPaging();
+                setCategories([
+                    { value: "all", label: "Tất cả" },
+                    ...data.map((cat) => ({
+                        value: cat.name,
+                        label: cat.name,
+                    })),
+                ]);
+            } catch (error) {
+                console.error("Failed to load categories", error);
+            }
+        };
+
+        loadCategories();
+    }, []);
+
+    // Mapping FurnitureResponse to Product type expected by ProductsClient
+    const mappedProducts: Product[] = products.map((p) => ({
+        id: p.furnitureId,
+        title: p.name, // 'name' mapped to 'title'
+        price: p.finalPrice || p.price,
+        originalPrice: p.price !== p.finalPrice ? p.price : undefined,
+        discount: p.discountPercentage,
+        image: p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", // Fallback image
+        images: p.image ? [p.image] : ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800"], // Create array
+        rating: 5, // Mock default
+        reviews: 0, // Mock default
+        badge: p.discountPercentage ? "Giảm giá" : undefined, // Mock badge
+        // Dùng đúng tên danh mục từ BE để khớp với filter categories
+        category: p.categoryName || "Khác",
+        tags: ["furniture"], // Mock tags
+        shortDescription: p.description ? p.description.substring(0, 100) + "..." : "Mô tả sản phẩm",
+        description: p.description || "Chi tiết sản phẩm đang được cập nhật.",
+        specifications: [], // Mock empty
+        features: [] // Mock empty
+    }));
+
     return (
         <div className="flex flex-col min-h-screen bg-main">
             <Header />
@@ -50,11 +95,15 @@ export default function ProductsPage() {
                 {/* Content */}
                 <section className="py-12">
                     <div className="container mx-auto px-4">
-                        <ProductsClient
-                            initialProducts={products}
-                            categories={categories}
-                            sortOptions={sortOptions}
-                        />
+                        {isLoading ? (
+                            <div className="text-center py-20">Đang tải sản phẩm...</div>
+                        ) : (
+                            <ProductsClient
+                                initialProducts={mappedProducts}
+                                categories={categories}
+                                sortOptions={sortOptions}
+                            />
+                        )}
                     </div>
                 </section>
             </main>

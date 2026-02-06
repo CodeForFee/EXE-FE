@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Newsreader } from "next/font/google";
 import { Providers } from "@/lib/providers";
+import { AuthProvider } from "@/lib/context/authContext";
 import ChatBot from "@/components/ui/ChatBot";
 import PageLoader from "@/components/ui/PageLoader";
 import RouteLoader from "@/components/ui/RouteLoader";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const heading = Bricolage_Grotesque({
@@ -31,22 +33,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken");
+  const refreshToken = cookieStore.get("refreshToken");
+
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className={`${heading.variable} ${body.variable} font-body antialiased`} suppressHydrationWarning>
-        <Providers>
-          <PageLoader />
-          <Suspense fallback={null}>
-            <RouteLoader />
-          </Suspense>
-          {children}
-          <ChatBot />
-        </Providers>
+        <AuthProvider 
+          initialAccessToken={accessToken?.value || null} 
+          initialRefreshToken={refreshToken?.value || null}
+        >
+          <Providers>
+            <PageLoader />
+            <Suspense fallback={null}>
+              <RouteLoader />
+            </Suspense>
+            {children}
+            <ChatBot />
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

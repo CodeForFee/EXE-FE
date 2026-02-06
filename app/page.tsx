@@ -1,22 +1,47 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/ui/ProductCard";
-import { products } from "@/lib/data/products";
 import Link from "next/link";
 import HomeHero from "@/components/home/HomeHero";
 import AnimatedFeatures from "@/components/home/AnimatedFeatures";
 import HomeBanner from "@/components/home/HomeBanner";
 import HomeTestimonials from "@/components/home/HomeTestimonials";
 import HomeCTA from "@/components/home/HomeCTA";
+import { furnitureService } from "@/lib/api/services/furniture";
+import { FurnitureResponse } from "@/lib/api/types";
 
-export default function Home() {
-  const featuredProducts = products.slice(0, 6);
+type HomeProduct = {
+  id: string;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  badge?: string;
+  rating?: number;
+  shortDescription?: string;
+};
+
+const mapFurnitureToHomeProduct = (p: FurnitureResponse): HomeProduct => ({
+  id: p.furnitureId,
+  title: p.name,
+  price: p.finalPrice ?? p.price,
+  originalPrice: p.finalPrice && p.finalPrice !== p.price ? p.price : undefined,
+  image: p.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800",
+  badge: p.discountPercentage ? "Giảm giá" : undefined,
+  rating: 5,
+  shortDescription: p.description ? `${p.description.substring(0, 80)}...` : undefined,
+});
+
+export default async function Home() {
+  const page = await furnitureService.getAllFurniture(0, 6, "createdAt", "DESC");
+  const featuredProducts = page.content.map(mapFurnitureToHomeProduct);
+  const heroProduct = featuredProducts[0] ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-main">
       <Header />
       <main className="flex-grow">
-        <HomeHero />
+        <HomeHero featuredProduct={heroProduct} />
 
         <AnimatedFeatures />
 
@@ -57,5 +82,4 @@ export default function Home() {
     </div>
   );
 }
-
 

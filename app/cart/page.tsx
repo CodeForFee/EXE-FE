@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -63,14 +62,12 @@ export default function CartPage() {
                             <ShoppingBagIcon className="w-24 h-24 text-gray-400 mb-6" />
                             <h2 className="text-3xl font-heading font-bold text-heading mb-4 text-center">Giỏ hàng trống</h2>
                             <p className="text-gray-500 font-body mb-8 text-center">Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
-                            <Button
-                                as={Link}
+                            <Link
                                 href="/products"
-                                className="px-8 py-6 bg-green-900 text-cream font-heading font-bold"
-                                radius="none"
+                                className="px-8 py-6 bg-green-900 text-cream font-heading font-bold inline-flex items-center justify-center"
                             >
                                 KHÁM PHÁ SẢN PHẨM
-                            </Button>
+                            </Link>
                         </motion.div>
                     ) : (
                         <div className="grid grid-cols-12 gap-8 lg:gap-12">
@@ -101,12 +98,11 @@ export default function CartPage() {
                                                 {/* Image */}
                                                 <Link href={`/products/${item.id}`} className="flex-shrink-0">
                                                     <div className="w-28 h-28 overflow-hidden bg-secondary">
-                                                        <Image
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img
                                                             src={item.image}
                                                             alt={item.title}
                                                             className="w-full h-full object-cover"
-                                                            radius="none"
-                                                            removeWrapper
                                                         />
                                                     </div>
                                                 </Link>
@@ -238,15 +234,13 @@ export default function CartPage() {
                                             </span>
                                         </div>
 
-                                        <Button
-                                            as={Link}
+                                        <Link
                                             href="/checkout"
                                             className="w-full mt-6 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all flex items-center justify-center gap-2"
-                                            radius="none"
                                         >
                                             TIẾN HÀNH THANH TOÁN
                                             <ArrowRightIcon className="w-5 h-5" />
-                                        </Button>
+                                        </Link>
 
                                         {/* Trust Badges */}
                                         <div className="mt-6 pt-6 border-t border-divider space-y-3">

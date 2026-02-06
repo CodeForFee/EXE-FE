@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button, Image } from "@heroui/react";
 import Link from "next/link";
 import {
     HomeModernIcon,
@@ -13,12 +12,11 @@ export default function HomeBanner() {
     return (
         <section className="py-24 bg-green-950 relative overflow-hidden">
             <div className="absolute inset-0">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                     src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2000"
                     alt="Banner"
                     className="w-full h-full object-cover opacity-20"
-                    radius="none"
-                    removeWrapper
                 />
             </div>
 
@@ -41,14 +39,12 @@ export default function HomeBanner() {
                         <p className="text-xl text-cream/60 font-body mb-8 max-w-lg">
                             Mua theo combo để được giảm giá sâu — tiết kiệm hơn, đẹp hơn cho không gian của bạn.
                         </p>
-                        <Button
-                            as={Link}
+                        <Link
                             href="/combos"
-                            className="px-10 py-7 bg-cream text-green-900 font-heading font-bold text-base tracking-wide hover:bg-green-400 transition-all"
-                            radius="none"
+                            className="px-10 py-7 bg-cream text-green-900 font-heading font-bold text-base tracking-wide hover:bg-green-400 transition-all inline-flex items-center justify-center"
                         >
                             XEM COMBO →
-                        </Button>
+                        </Link>
                     </motion.div>
 
                     <motion.div

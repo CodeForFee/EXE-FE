@@ -1,28 +1,36 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button, Image } from "@heroui/react";
 import Link from "next/link";
 import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
-import { ArrowDownIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import { CheckBadgeIcon } from "@heroicons/react/24/outline";
 
-import { products as allProducts } from "@/lib/data/products";
+type HeroProduct = {
+    title: string;
+    price: number;
+    image: string;
+    shortDescription?: string;
+};
 
-export default function HomeHero() {
-    const featuredProduct = allProducts[0];
-    const displayPrice = (featuredProduct.price / 1000).toLocaleString("vi-VN") + "k";
+interface HomeHeroProps {
+    featuredProduct: HeroProduct | null;
+}
+
+export default function HomeHero({ featuredProduct }: HomeHeroProps) {
+    const displayPrice = featuredProduct
+        ? (featuredProduct.price / 1000).toLocaleString("vi-VN") + "k"
+        : undefined;
 
     return (
-        <section className="relative min-h-screen flex items-center overflow-hidden bg-[#073B3A]">
+        <section className="relative min-h-screen flex items-center overflow-hidden bg-[#073B3A] pt-[120px]">
             {/* Background Layers */}
             <div className="absolute inset-0 z-0">
-                <Image
-                    src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=2000"
-                    alt="Hero background"
-                    className="w-full h-full object-cover opacity-40 scale-105"
-                    radius="none"
-                    removeWrapper
-                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=2000"
+                            alt="Hero background"
+                            className="w-full h-full object-cover opacity-40 scale-105"
+                        />
                 <div className="absolute inset-0 bg-gradient-to-r from-green-950 via-green-950/80 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-green-950" />
             </div>
@@ -40,7 +48,7 @@ export default function HomeHero() {
                 />
             </div>
 
-            <div className="container mx-auto px-4 relative z-10 pt-16 md:pt-4">
+            <div className="container mx-auto px-4 relative z-10 pt-4 md:pt-0">
                 <div className="grid grid-cols-12 gap-8 items-center">
                     {/* LEFT CONTENT */}
                     <motion.div
@@ -73,23 +81,20 @@ export default function HomeHero() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                            <Button
-                                as={Link}
-                                href="/products"
-                                className="px-8 py-6 bg-green-400 text-green-950 font-heading font-bold text-base tracking-wide hover:bg-cream transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-green-900/40"
-                                radius="none"
-                            >
-                                KHÁM PHÁ NGAY →
-                            </Button>
-                            <Button
-                                as={Link}
-                                href="/combos"
-                                variant="bordered"
-                                className="px-8 py-6 border-2 border-cream/30 text-cream font-heading font-bold text-base tracking-wide hover:bg-cream/10 transition-all duration-300"
-                                radius="none"
-                            >
-                                XEM COMBO
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+                                <Link
+                                    href="/products"
+                                    className="px-8 py-6 bg-green-400 text-green-950 font-heading font-bold text-base tracking-wide hover:bg-cream transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-green-900/40 inline-flex items-center justify-center"
+                                >
+                                    KHÁM PHÁ NGAY →
+                                </Link>
+                                <Link
+                                    href="/combos"
+                                    className="px-8 py-6 border-2 border-cream/30 text-cream font-heading font-bold text-base tracking-wide hover:bg-cream/10 transition-all duration-300 inline-flex items-center justify-center"
+                                >
+                                    XEM COMBO
+                                </Link>
+                            </div>
                         </div>
 
                         {/* Stats */}
@@ -121,11 +126,13 @@ export default function HomeHero() {
                     >
                         {/* Main Image with Glass Container */}
                         <div className="relative z-10 p-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl max-w-[420px] ml-auto">
-                            <img
-                                src={featuredProduct.image}
-                                alt={featuredProduct.title}
-                                className="w-full aspect-square object-cover rounded-xl shadow-2xl shadow-green-950/50"
-                            />
+                            {featuredProduct && (
+                                <img
+                                    src={featuredProduct.image}
+                                    alt={featuredProduct.title}
+                                    className="w-full aspect-square object-cover rounded-xl shadow-2xl shadow-green-950/50"
+                                />
+                            )}
 
                             {/* Floating Card: Description */}
                             <motion.div
@@ -135,7 +142,9 @@ export default function HomeHero() {
                             >
                                 <CheckBadgeIcon className="w-6 h-6 text-green-600 mb-1" />
                                 <span className="block font-heading font-extrabold text-base leading-tight uppercase">Best for Study</span>
-                                <span className="text-[10px] font-body opacity-70">{featuredProduct.shortDescription}</span>
+                                <span className="text-[10px] font-body opacity-70">
+                                    {featuredProduct?.shortDescription ?? "Nội thất tối ưu cho góc học tập của bạn."}
+                                </span>
                             </motion.div>
 
                             {/* Floating Card: Price */}
@@ -145,7 +154,9 @@ export default function HomeHero() {
                                 className="absolute -right-4 top-10 p-4 bg-green-500 text-green-950 shadow-2xl"
                             >
                                 <span className="block text-[10px] font-heading font-bold opacity-60 uppercase tracking-widest">Giá sinh viên</span>
-                                <span className="block text-2xl font-heading font-extrabold">{displayPrice}</span>
+                                <span className="block text-2xl font-heading font-extrabold">
+                                    {displayPrice ?? "Ưu đãi"}
+                                </span>
                             </motion.div>
                         </div>
 

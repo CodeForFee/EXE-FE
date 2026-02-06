@@ -1,7 +1,6 @@
-"use client";
-
-import { Button, Chip, Divider } from "@heroui/react";
-import { Product } from "@/lib/data/products";
+\"use client\";\r
+\r
+import { Product } from \"@/lib/data/products\";\r
 import { motion } from "framer-motion";
 
 interface ProductInfoProps {
@@ -18,9 +17,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             >
                 <div className="flex items-center gap-3 mb-6">
                     {product.badge && (
-                        <Chip className="bg-green-600 text-white font-black uppercase text-[10px] px-3">
+                        <span className="inline-block bg-green-600 text-white font-black uppercase text-[10px] px-3 py-1 rounded-full">
                             {product.badge}
-                        </Chip>
+                        </span>
                     )}
                     <div className="flex items-center gap-1 text-muted text-sm font-bold">
                         <span className="text-yellow-500">★</span>
@@ -52,28 +51,24 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <h4 className="text-xs font-black text-muted uppercase tracking-widest">Đặc điểm nổi bật</h4>
                     <div className="flex flex-wrap gap-2">
                         {product.features.map((f) => (
-                            <Chip key={f} variant="flat" className="bg-secondary text-green-800 font-bold border-none">
+                            <span key={f} className="inline-flex items-center px-3 py-1 rounded-full bg-secondary text-green-800 font-bold text-sm">
                                 ✓ {f}
-                            </Chip>
+                            </span>
                         ))}
                     </div>
                 </div>
 
                 <div className="flex gap-4">
-                    <Button
-                        size="lg"
-                        className="flex-1 bg-green-600 text-white font-black h-20 text-lg rounded-[1.5rem] shadow-xl shadow-green-600/30 hover:bg-green-700 transition-all hover:scale-[1.02]"
+                    <button
+                        className="flex-1 bg-green-600 text-white font-black h-20 text-lg rounded-[1.5rem] shadow-xl shadow-green-600/30 hover:bg-green-700 transition-all hover:scale-[1.02] flex items-center justify-center"
                     >
                         MUA NGAY
-                    </Button>
-                    <Button
-                        isIconOnly
-                        size="lg"
-                        variant="bordered"
-                        className="w-20 h-20 border-2 border-divider/50 rounded-[1.5rem] hover:bg-white hover:border-green-600 transition-all"
+                    </button>
+                    <button
+                        className="w-20 h-20 border-2 border-divider/50 rounded-[1.5rem] hover:bg-white hover:border-green-600 transition-all flex items-center justify-center"
                     >
                         <span className="text-2xl">🛒</span>
-                    </Button>
+                    </button>
                 </div>
             </motion.div>
         </div>

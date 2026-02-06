@@ -2,10 +2,10 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image, Input, Radio, RadioGroup } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useCartStore } from "@/lib/stores/useCartStore";
 import {
     ChevronRightIcon,
     TruckIcon,
@@ -17,29 +17,10 @@ import {
     LockClosedIcon,
 } from "@heroicons/react/24/outline";
 
-import { products as allProducts } from "@/lib/data/products";
-
-const orderItems = [
-    {
-        id: allProducts[0].id,
-        title: allProducts[0].title,
-        price: allProducts[0].price,
-        quantity: 1,
-        image: allProducts[0].image,
-    },
-    {
-        id: allProducts[2].id,
-        title: allProducts[2].title,
-        price: allProducts[2].price,
-        quantity: 2,
-        image: allProducts[2].image,
-    },
-];
-
-
 export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState("cod");
     const [step, setStep] = useState(1);
+    const { items: orderItems } = useCartStore();
 
     const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = 0;
@@ -106,80 +87,68 @@ export default function CheckoutPage() {
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Họ và tên *
                                             </label>
-                                            <Input
-                                                placeholder="Nguyễn Văn A"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Nguyễn Văn A"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Số điện thoại *
                                             </label>
-                                            <Input
-                                                placeholder="0901234567"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="0901234567"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Email
                                             </label>
-                                            <Input
-                                                placeholder="email@example.com"
-                                                type="email"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="email@example.com"
+                                                    type="email"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Địa chỉ giao hàng *
                                             </label>
-                                            <Input
-                                                placeholder="Số nhà, tên đường, phường/xã"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Số nhà, tên đường, phường/xã"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Quận/Huyện *
                                             </label>
-                                            <Input
-                                                placeholder="Chọn quận/huyện"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Chọn quận/huyện"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
                                                 Tỉnh/Thành phố *
                                             </label>
-                                            <Input
-                                                placeholder="Chọn tỉnh/thành"
-                                                classNames={{
-                                                    input: "font-body",
-                                                    inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                                }}
-                                                radius="none"
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Chọn tỉnh/thành"
+                                                    className="w-full h-12 px-4 border border-divider bg-main hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                                />
+                                            </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="text-sm font-heading font-medium text-heading mb-2 block">
@@ -251,12 +220,11 @@ export default function CheckoutPage() {
                                         {orderItems.map((item) => (
                                             <div key={item.id} className="flex gap-4">
                                                 <div className="w-16 h-16 bg-card overflow-hidden flex-shrink-0">
-                                                    <Image
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
                                                         src={item.image}
                                                         alt={item.title}
                                                         className="w-full h-full object-cover"
-                                                        radius="none"
-                                                        removeWrapper
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -291,13 +259,13 @@ export default function CheckoutPage() {
                                         </span>
                                     </div>
 
-                                    <Button
+                                    <button
+                                        type="button"
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all flex items-center justify-center gap-2"
-                                        radius="none"
                                     >
                                         <LockClosedIcon className="w-5 h-5" />
                                         ĐẶT HÀNG
-                                    </Button>
+                                    </button>
 
                                     {/* Security Note */}
                                     <div className="mt-6 flex items-start gap-3 text-sm text-muted">
