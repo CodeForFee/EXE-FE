@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@heroui/react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     Squares2X2Icon,

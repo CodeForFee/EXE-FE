@@ -1,8 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { Image } from "@heroui/react";
-import { motion, AnimatePresence } from "framer-motion";
+\"use client\";\r
+\r
+import { useState } from \"react\";\r
+import { motion, AnimatePresence } from \"framer-motion\";\r
 
 interface ProductGalleryProps {
     images: string[];
@@ -23,12 +22,11 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         className="w-full h-full"
                     >
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                             src={activeImage}
                             alt="Product large view"
                             className="w-full h-full object-cover"
-                            radius="none"
-                            removeWrapper
                         />
                     </motion.div>
                 </AnimatePresence>
@@ -42,12 +40,11 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
                         className={`relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-300 border-2 ${activeImage === img ? "border-green-600 scale-95 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
                             }`}
                     >
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                             src={img}
                             alt={`Thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
-                            radius="none"
-                            removeWrapper
                         />
                     </button>
                 ))}

@@ -1,6 +1,5 @@
-import { apiClient } from '../client';
+import http from '@/lib/http';
 import {
-    ApiResponse,
     ApplyDiscountRequest,
     CreateDiscountRequest,
     DiscountResponse,
@@ -9,39 +8,39 @@ import {
 
 export const discountService = {
     getAllDiscounts: async (): Promise<DiscountResponse[]> => {
-        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts');
-        return response.data.data;
+        const response = await http.get<DiscountResponse[]>('/discounts');
+        return response.data;
     },
 
     getActiveDiscounts: async (): Promise<DiscountResponse[]> => {
-        const response = await apiClient.get<ApiResponse<DiscountResponse[]>>('/discounts/active');
-        return response.data.data;
+        const response = await http.get<DiscountResponse[]>('/discounts/active');
+        return response.data;
     },
 
     getDiscountById: async (id: string): Promise<DiscountResponse> => {
-        const response = await apiClient.get<ApiResponse<DiscountResponse>>(`/discounts/${id}`);
-        return response.data.data;
+        const response = await http.get<DiscountResponse>(`/discounts/${id}`);
+        return response.data;
     },
 
     createDiscount: async (request: CreateDiscountRequest): Promise<DiscountResponse> => {
-        const response = await apiClient.post<ApiResponse<DiscountResponse>>('/discounts', request);
-        return response.data.data;
+        const response = await http.post<DiscountResponse>('/discounts', request);
+        return response.data;
     },
 
     updateDiscount: async (id: string, request: UpdateDiscountRequest): Promise<DiscountResponse> => {
-        const response = await apiClient.put<ApiResponse<DiscountResponse>>(`/discounts/${id}`, request);
-        return response.data.data;
+        const response = await http.put<DiscountResponse>(`/discounts/${id}`, request);
+        return response.data;
     },
 
     deleteDiscount: async (id: string): Promise<void> => {
-        await apiClient.delete<ApiResponse<void>>(`/discounts/${id}`);
+        await http.delete<void>(`/discounts/${id}`);
     },
 
     applyDiscountToFurniture: async (discountId: string, request: ApplyDiscountRequest): Promise<void> => {
-        await apiClient.post<ApiResponse<void>>(`/discounts/${discountId}/apply`, request);
+        await http.post<void>(`/discounts/${discountId}/apply`, request);
     },
 
     removeDiscountFromFurniture: async (discountId: string, furnitureId: string): Promise<void> => {
-        await apiClient.delete<ApiResponse<void>>(`/discounts/${discountId}/furniture/${furnitureId}`);
+        await http.delete<void>(`/discounts/${discountId}/furniture/${furnitureId}`);
     }
 };

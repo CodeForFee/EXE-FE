@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button, Input } from "@heroui/react";
 import ProductCard from "@/components/ui/ProductCard";
 import { ProductCardSkeleton } from "@/components/ui/Skeleton";
 import { Product } from "@/lib/data/products";
@@ -52,16 +51,14 @@ export default function ProductsClient({
                         <label className="text-[11px] font-heading font-bold text-muted tracking-[0.15em] uppercase mb-3 block">
                             Tìm kiếm
                         </label>
-                        <Input
-                            placeholder="Nhập tên sản phẩm..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            classNames={{
-                                input: "font-body",
-                                inputWrapper: "border border-divider bg-card hover:border-green-600/50"
-                            }}
-                            radius="none"
-                        />
+                        <div className="relative group">
+                            <input
+                                placeholder="Nhập tên sản phẩm..."
+                                className="w-full h-10 px-3 bg-card border border-divider hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body text-sm"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     {/* Categories */}
@@ -125,8 +122,8 @@ export default function ProductsClient({
                             <ProductCardSkeleton key={i} />
                         ))
                     ) : sortedProducts.length > 0 ? (
-                        sortedProducts.map((product) => (
-                            <ProductCard key={product.id} {...product} />
+                        sortedProducts.map((product, index) => (
+                            <ProductCard key={`${product.id}-${index}`} {...product} />
                         ))
                     ) : (
                         <div className="col-span-full py-20 text-center">
@@ -138,13 +135,11 @@ export default function ProductsClient({
                 {/* Load More */}
                 {!isLoading && sortedProducts.length > 0 && (
                     <div className="mt-16 text-center">
-                        <Button
+                        <button
                             className="px-12 py-6 border-2 border-heading/20 text-heading font-heading font-bold text-sm tracking-wide hover:bg-heading hover:text-inverse transition-all"
-                            radius="none"
-                            variant="bordered"
                         >
                             TẢI THÊM SẢN PHẨM
-                        </Button>
+                        </button>
                     </div>
                 )}
             </div>

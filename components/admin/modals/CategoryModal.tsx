@@ -2,21 +2,13 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
-    Input,
-    Textarea
-} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { categoryService } from "@/lib/api/services/category";
-import { toast } from "react-toastify";
-import { CreateCategoryRequest, CategoryResponse, UpdateCategoryRequest } from "@/lib/api/types";
+import Modal from "@/components/ui/Modal";
+import Button from "@/components/ui/Button";
 import ImageUpload from "@/components/common/ImageUpload";
+import { categoryService } from "@/lib/api/services/category";
+import type { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from "@/lib/api/types";
+import { toast } from "react-toastify";
 
 interface CategoryModalProps {
     isOpen: boolean;
@@ -26,44 +18,60 @@ interface CategoryModalProps {
 
 export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: CategoryModalProps) {
     const queryClient = useQueryClient();
-    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<CreateCategoryRequest>();
-
-    useEffect(() => {
-        if (categoryToEdit) {
-            setValue("name", categoryToEdit.name);
-            setValue("description", categoryToEdit.description || "");
-            setValue("image", categoryToEdit.image || "");
-        } else {
-            reset({
-                name: "",
-                description: "",
-                image: ""
-            });
-        }
-    }, [categoryToEdit, setValue, reset, isOpen]);
-
-    const createMutation = useMutation({
-        mutationFn: (data: CreateCategoryRequest) => categoryService.createCategory(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
-            toast.success("Category created successfully");
-            onOpenChange();
-            reset();
-        },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to create category");
+    
+    const { 
+        register, 
+        handleSubmit, 
+        setValue, 
+        reset,
+        formState: { errors } 
+    } = useForm<CreateCategoryRequest>({
+        defaultValues: {
+            name: "",
+            description: "",
+            image: ""
         }
     });
 
-    const updateMutation = useMutation({
-        mutationFn: (data: UpdateCategoryRequest) => categoryService.updateCategory(categoryToEdit!.categoryId, data),
+    // Reset form when modal opens with edit data
+    useEffect(() => {
+        if (isOpen && categoryToEdit) {
+            setValue("name", categoryToEdit.name);
+            setValue("description", categoryToEdit.description || "");
+            setValue("image", categoryToEdit.image || "");
+        } else if (isOpen) {
+            reset();
+        }
+    }, [isOpen, categoryToEdit, setValue, reset]);
+
+    // Create mutation
+    const createMutation = useMutation({
+        mutationFn: (data: CreateCategoryRequest) => categoryService.createCategory(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
-            toast.success("Category updated successfully");
+            toast.success("Tạo danh mục thành công!");
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            reset();
             onOpenChange();
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to update category");
+            toast.error(error.message || "Không thể tạo danh mục");
+        }
+    });
+
+    // Update mutation
+    const updateMutation = useMutation({
+        mutationFn: (data: UpdateCategoryRequest) => {
+            if (!categoryToEdit?.categoryId) throw new Error("No category ID");
+            return categoryService.updateCategory(categoryToEdit.categoryId, data);
+        },
+        onSuccess: () => {
+            toast.success("Cập nhật danh mục thành công!");
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            reset();
+            onOpenChange();
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Không thể cập nhật danh mục");
         }
     });
 
@@ -78,67 +86,55 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
     return (
         <Modal
             isOpen={isOpen}
-            onOpenChange={onOpenChange}
-            placement="center"
-            backdrop="blur"
+            onClose={onOpenChange}
+            title={categoryToEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
             size="lg"
-            scrollBehavior="inside"
         >
-            <ModalContent>
-                {(onClose) => (
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex flex-col gap-1 font-heading text-green-950">
-                            {categoryToEdit ? "Edit Category" : "Add New Category"}
-                        </ModalHeader>
-                        <ModalBody>
-                            <div className="space-y-6 border border-divider p-6 rounded-lg bg-gray-50/30">
-                                <div className="p-2 border border-dashed border-divider rounded-lg bg-white">
-                                    <ImageUpload
-                                        label="Category Image"
-                                        value={categoryToEdit?.image || ""}
-                                        onChange={(url) => setValue("image", url)}
-                                    />
-                                </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+                <div className="space-y-6 p-1">
+                    <div className="p-2 border border-dashed border-divider rounded-lg bg-white">
+                        <ImageUpload
+                            label="Ảnh danh mục"
+                            value={categoryToEdit?.image || ""}
+                            onChange={(url) => setValue("image", url)}
+                        />
+                    </div>
 
-                                <Input
-                                    {...register("name", { required: "Name is required" })}
-                                    label="Category Name"
-                                    placeholder="e.g., Living Room"
-                                    variant="bordered"
-                                    errorMessage={errors.name?.message}
-                                    isInvalid={!!errors.name}
-                                    labelPlacement="outside"
-                                    classNames={{ inputWrapper: "bg-white" }}
-                                />
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-green-900">Tên danh mục</label>
+                        <input
+                            {...register("name", { required: "Tên danh mục là bắt buộc" })}
+                            placeholder="VD: Living Room, Bedroom..."
+                            className={`w-full px-4 py-3 rounded-lg border focus:outline-none transition-colors ${errors.name ? "border-red-500 focus:border-red-500" : "border-divider focus:border-green-700"}`}
+                        />
+                        {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+                    </div>
 
-                                <Textarea
-                                    {...register("description", { required: "Description is required" })}
-                                    label="Description"
-                                    placeholder="Category description..."
-                                    variant="bordered"
-                                    errorMessage={errors.description?.message}
-                                    isInvalid={!!errors.description}
-                                    labelPlacement="outside"
-                                    classNames={{ inputWrapper: "bg-white" }}
-                                />
-                            </div>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="danger" variant="light" onPress={onClose}>
-                                Cancel
-                            </Button>
-                            <Button
-                                color="success"
-                                type="submit"
-                                className="bg-green-900 text-cream font-bold"
-                                isLoading={createMutation.isPending || updateMutation.isPending}
-                            >
-                                {categoryToEdit ? "Save Changes" : "Create Category"}
-                            </Button>
-                        </ModalFooter>
-                    </form>
-                )}
-            </ModalContent>
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-green-900">Mô tả</label>
+                        <textarea
+                            {...register("description", { required: "Mô tả là bắt buộc" })}
+                            placeholder="Mô tả về danh mục..."
+                            rows={3}
+                            className={`w-full px-4 py-3 rounded-lg border focus:outline-none transition-colors ${errors.description ? "border-red-500 focus:border-red-500" : "border-divider focus:border-green-700"}`}
+                        />
+                        {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-divider">
+                    <Button variant="danger" type="button" onClick={onOpenChange}>
+                        Hủy
+                    </Button>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        isLoading={createMutation.isPending || updateMutation.isPending}
+                    >
+                        {categoryToEdit ? "Lưu thay đổi" : "Tạo danh mục"}
+                    </Button>
+                </div>
+            </form>
         </Modal>
     );
 }

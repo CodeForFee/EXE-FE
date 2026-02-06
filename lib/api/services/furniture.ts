@@ -1,6 +1,5 @@
-import { apiClient } from '../client';
+import http from '@/lib/http';
 import {
-    ApiResponse,
     CreateFurnitureRequest,
     FurnitureResponse,
     Page,
@@ -14,29 +13,29 @@ export const furnitureService = {
         sortBy = 'createdAt',
         sortDir = 'DESC'
     ): Promise<Page<FurnitureResponse>> => {
-        const response = await apiClient.get<ApiResponse<Page<FurnitureResponse>>>(
-            `/furniture?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-        );
-        return response.data.data;
+        const response = await http.get<Page<FurnitureResponse>>('/furniture', {
+            params: { page, size, sortBy, sortDir }
+        });
+        return response.data;
     },
 
     getFurnitureById: async (id: string): Promise<FurnitureResponse> => {
-        const response = await apiClient.get<ApiResponse<FurnitureResponse>>(`/furniture/${id}`);
-        return response.data.data;
+        const response = await http.get<FurnitureResponse>(`/furniture/${id}`);
+        return response.data;
     },
 
     createFurniture: async (request: CreateFurnitureRequest): Promise<FurnitureResponse> => {
-        const response = await apiClient.post<ApiResponse<FurnitureResponse>>('/furniture', request);
-        return response.data.data;
+        const response = await http.post<FurnitureResponse>('/furniture', request);
+        return response.data;
     },
 
     updateFurniture: async (id: string, request: UpdateFurnitureRequest): Promise<FurnitureResponse> => {
-        const response = await apiClient.put<ApiResponse<FurnitureResponse>>(`/furniture/${id}`, request);
-        return response.data.data;
+        const response = await http.put<FurnitureResponse>(`/furniture/${id}`, request);
+        return response.data;
     },
 
     deleteFurniture: async (id: string): Promise<void> => {
-        await apiClient.delete<ApiResponse<void>>(`/furniture/${id}`);
+        await http.delete<void>(`/furniture/${id}`);
     },
 
     searchFurniture: async (
@@ -44,14 +43,14 @@ export const furnitureService = {
         page = 0,
         size = 10
     ): Promise<Page<FurnitureResponse>> => {
-        const response = await apiClient.get<ApiResponse<Page<FurnitureResponse>>>(
-            `/furniture/search?name=${name}&page=${page}&size=${size}`
-        );
-        return response.data.data;
+        const response = await http.get<Page<FurnitureResponse>>('/furniture/search', {
+            params: { name, page, size }
+        });
+        return response.data;
     },
 
     getFurnitureByCategory: async (categoryId: string): Promise<FurnitureResponse[]> => {
-        const response = await apiClient.get<ApiResponse<FurnitureResponse[]>>(`/furniture/category/${categoryId}`);
-        return response.data.data;
+        const response = await http.get<FurnitureResponse[]>(`/furniture/category/${categoryId}`);
+        return response.data;
     }
 };

@@ -169,28 +169,31 @@ export interface UpdateCategoryRequest {
 
 // Discount Models
 export interface DiscountResponse {
-    id: string; // UUID
-    code?: string; // If applicable, or just ID managed
-    percentage: number;
+    discountId: string; // Backend returns 'discountId', not 'id'
+    name: string; // Backend returns 'name'
+    description: string | null; // Backend can return null
+    value: number; // Backend returns 'value' (percentage as decimal)
     startDate: string;
     endDate: string;
-    description: string;
+    createdAt: string;
+    updatedAt: string;
     isActive: boolean;
+    appliedFurnitureCount: number;
 }
 
 export interface CreateDiscountRequest {
-    percentage: number;
+    name: string; // Backend expects 'name' not 'description'
+    value: number; // Backend expects 'value' not 'percentage'
     startDate: string;
     endDate: string;
-    description: string;
     furnitureIds?: string[]; // Optional to apply immediately
 }
 
 export interface UpdateDiscountRequest {
-    percentage?: number;
+    name?: string;
+    value?: number;
     startDate?: string;
     endDate?: string;
-    description?: string;
 }
 
 export interface ApplyDiscountRequest {
@@ -215,3 +218,239 @@ export interface NotificationRequest {
     userId: string;
     type?: string;
 }
+
+// Cart Models
+export interface CartItemResponse {
+    itemId: string;
+    furnitureId: string;
+    furnitureName: string;
+    furnitureImage: string;
+    price: number;
+    quantity: number;
+    subTotal: number;
+}
+
+export interface CartResponse {
+    cartId: string;
+    items: CartItemResponse[];
+    totalAmount: number;
+}
+
+export interface CartItemRequest {
+    furnitureId: string;
+    quantity: number;
+}
+
+export interface UpdateCartItemRequest {
+    quantity: number;
+}
+
+// Order Models
+export enum OrderStatus {
+    PENDING = 'PENDING',
+    CONFIRMED = 'CONFIRMED',
+    SHIPPING = 'SHIPPING',
+    DELIVERED = 'DELIVERED',
+    CANCELLED = 'CANCELLED',
+    REFUNDED = 'REFUNDED',
+    FAILED = 'FAILED'
+}
+
+export interface OrderItemResponse {
+    orderItemId: string;
+    furnitureId: string;
+    furnitureName: string;
+    furnitureImage: string;
+    price: number;
+    quantity: number;
+    subTotal: number;
+}
+
+export interface OrderResponse {
+    orderId: string;
+    userId: string;
+    items: OrderItemResponse[];
+    totalAmount: number;
+    status: OrderStatus;
+    shippingAddress: string;
+    shippingPhone: string;
+    note?: string; // Add note field if needed/supported later
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateOrderRequest {
+    shippingAddress: string;
+    shippingPhone: string;
+    note?: string;
+    items?: { furnitureId: string; quantity: number }[]; // Optional if buying from cart directly
+}
+
+export interface UpdateOrderStatusRequest {
+    status: OrderStatus;
+}
+
+
+// Review Models
+export interface FurnitureReviewResponse {
+    reviewId: string;
+    userId: string;
+    userName: string;
+    userImage?: string;
+    furnitureId: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SubmitReviewRequest {
+    rating: number;
+    comment: string;
+}
+
+// Post Models
+export type PostStatus = 'ACTIVE' | 'SOLD' | 'INACTIVE' | 'DELETED' | 'ARCHIVED';
+
+export interface PostDetailResponse {
+    id: string;
+    description: string;
+    image: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PostResponse {
+    id: string;
+    title: string;
+    price: number;
+    status: PostStatus | string;
+    categoryId: string;
+    categoryName: string;
+    userId: string;
+    userName: string;
+    userImage?: string;
+    postDetail: PostDetailResponse[];
+    createdAt: string;
+    updatedAt: string;
+    boost: boolean;
+}
+
+export interface CreatePostDetailRequest {
+    description: string;
+    image: string;
+}
+
+export interface CreatePostRequest {
+    title: string;
+    price: number;
+    categoryId: string; // UUID
+    status: PostStatus;
+    image: string;
+    description: string;
+}
+
+export interface UpdatePostRequest {
+    title?: string;
+    price?: number;
+    categoryId?: string; // UUID
+    status?: PostStatus;
+}
+
+// Comment Models
+export interface CommentResponse {
+    id: string;
+    content: string;
+    userId: string;
+    userName: string;
+    userImage: string;
+    postId: string;
+    replyId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateCommentRequest {
+    content: string;
+    replyId?: string;
+}
+
+export interface UpdateCommentRequest {
+    content: string;
+}
+
+// Chat Models
+export interface ChatRoom {
+    id: string;
+    userAId: string; // Current user or initiator
+    userBId: string; // Other user
+    userAName?: string;
+    userBName?: string;
+    userAImage?: string;
+    userBImage?: string;
+    lastMessage?: string;
+    lastMessageTime?: string;
+    type: 'PRIVATE' | 'BOT'; // Assuming types
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ChatRoomResponse { // For the create room response
+    id: string;
+    userAId: string;
+    userBId: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ChatMessage {
+    id: string;
+    roomId: string;
+    senderId: string;
+    content: string;
+    isRead: boolean;
+    createdAt: string;
+}
+
+export interface ChatMessageResponse {
+    id: string;
+    content: string;
+    senderId: string;
+    createdAt: string;
+    isRead: boolean;
+}
+
+
+// Distance Models
+export interface DistanceResponse {
+    distance: number; // in meters or km
+    duration: number; // in seconds
+    unit: string;
+}
+
+// Boost Usage Models
+export type BoostStatus = 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+
+export interface BoostUsageResponse {
+    id: string;
+    postId: string;
+    userId: string;
+    userBoostId: string; // The specific boost package ID used
+    startDate: string;
+    endDate: string;
+    status: BoostStatus;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateBoostUsageRequest {
+    postId: string;
+    userBoostId: string;
+    startDate?: string;
+}
+
+export interface UpdateBoostUsageRequest {
+    status?: BoostStatus;
+    endDate?: string;
+}
+

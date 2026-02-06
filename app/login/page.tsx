@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Input } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -11,15 +10,17 @@ import {
     LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { useUserStore } from "@/lib/stores/useUserStore";
+import { useSessionStore } from "@/lib/stores/useSessionStore";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/api/services/auth";
+import { userService } from "@/lib/api/services/user";
 import { useLoadingStore } from "@/lib/stores/useLoadingStore";
 import { toast } from "react-toastify";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, clearError } = useUserStore(); // removed isLoading, error from destruct
+    const setSession = useSessionStore((state) => state.setSession);
+    const updateUser = useSessionStore((state) => state.updateUser);
     const { setIsLoading } = useLoadingStore();
 
     const [email, setEmail] = useState("");
@@ -29,12 +30,41 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true, "Đang đăng nhập...");
         try {
-            await login({ email, password });
+            // Step 1: Login to backend
+            const authResponse = await authService.loginClient({ email, password });
+            
+            // Step 2: Set httpOnly cookies via API route
+            await authService.loginServer({
+                accessToken: authResponse.token,
+                refreshToken: authResponse.token // Backend might return same token or separate refresh token
+            });
+
+            // Step 3: Update session store (this will decode JWT and set basic user info)
+            setSession({
+                accessToken: authResponse.token,
+                refreshToken: authResponse.token
+            });
+
+            // Step 4: Fetch full user profile to get image and other details
+            if (authResponse.userId) {
+                try {
+                    const fullUser = await userService.getUserById(authResponse.userId);
+                    // Update session with full user data including image
+                    updateUser(fullUser);
+                } catch (fetchError) {
+                    console.error("Failed to fetch full user profile:", fetchError);
+                    // Continue anyway, basic user info from JWT is enough
+                }
+            }
+
             toast.success("Đăng nhập thành công!");
             setIsLoading(false);
-            router.push('/'); // Redirect to home on success
+            
+            // Redirect to home on success
+            router.push('/');
+            router.refresh(); // Refresh to update server components
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Đăng nhập thất bại");
+            toast.error(err.message || err.response?.data?.message || "Đăng nhập thất bại");
             setIsLoading(false);
         }
     };
@@ -73,18 +103,16 @@ export default function LoginPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted uppercase tracking-widest flex items-center gap-2">
                                             <EnvelopeIcon className="w-4 h-4" /> Email
                                         </label>
-                                        <Input
-                                            type="email"
-                                            placeholder="email@example.com"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-14"
-                                            }}
-                                            radius="none"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type="email"
+                                                placeholder="email@example.com"
+                                                className="w-full h-14 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Password */}
@@ -92,18 +120,16 @@ export default function LoginPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted uppercase tracking-widest flex items-center gap-2">
                                             <LockClosedIcon className="w-4 h-4" /> Mật khẩu
                                         </label>
-                                        <Input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-14"
-                                            }}
-                                            radius="none"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="w-full h-14 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Custom Checkbox fix dính chữ */}
@@ -129,13 +155,12 @@ export default function LoginPage() {
                                         </Link>
                                     </div>
 
-                                    <Button
+                                    <button
                                         type="submit"
-                                        className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all"
-                                        radius="none"
+                                        className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all flex items-center justify-center"
                                     >
                                         ĐĂNG NHẬP
-                                    </Button>
+                                    </button>
                                 </form>
 
                                 {/* Social Login */}
@@ -150,10 +175,9 @@ export default function LoginPage() {
                                     </div>
 
                                     <div className="mt-6">
-                                        <Button
-                                            variant="bordered"
-                                            className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3"
-                                            radius="none"
+                                        <button
+                                            type="button"
+                                            className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3 transition-colors"
                                             onClick={() => authService.googleLogin()}
                                         >
                                             {/* Giữ nguyên Logo Google SVG của bạn */}
@@ -176,7 +200,7 @@ export default function LoginPage() {
                                                 />
                                             </svg>
                                             Tiếp tục với Google
-                                        </Button>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

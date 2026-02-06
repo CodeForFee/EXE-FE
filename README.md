@@ -5,7 +5,7 @@ Nền tảng mua bán nội thất giá rẻ, phù hợp túi tiền cho sinh vi
 ## 🚀 Công nghệ sử dụng
 
 - **Framework**: Next.js 16 (App Router)
-- **UI Library**: HeroUI (React UI Framework)
+- **UI**: Custom React components + Tailwind CSS 4
 - **Styling**: Tailwind CSS 4
 - **Animation**: Framer Motion
 - **Language**: TypeScript
@@ -23,7 +23,7 @@ unihome/
 │   ├── layout/           # Layout components (Header, Footer)
 │   └── ui/               # UI components (ProductCard, HeroSection, etc.)
 ├── lib/                  # Library code
-│   ├── providers.tsx     # HeroUI và Theme providers
+│   ├── providers.tsx     # App providers (React Query, Theme, v.v.)
 │   └── constants.ts      # App constants
 ├── types/                # TypeScript type definitions
 │   └── index.ts         # Shared types
@@ -31,7 +31,7 @@ unihome/
 │   ├── format.ts        # Formatting utilities
 │   └── constants.ts     # Constants
 ├── public/              # Static assets
-└── tailwind.config.ts   # Tailwind CSS configuration với HeroUI theme
+└── tailwind.config.ts   # Tailwind CSS configuration với custom theme
 ```
 
 ## 🎨 Design System
@@ -45,7 +45,7 @@ unihome/
 
 ### Components
 
-Tất cả components sử dụng HeroUI để đảm bảo tính nhất quán và accessibility.
+Các components UI được xây dựng thủ công trên nền Tailwind, tối ưu cho brand UNIHOME.
 
 ## 🛠️ Cài đặt và chạy
 
@@ -97,7 +97,6 @@ npm start
 ## 📚 Tài liệu tham khảo
 
 - [Next.js Documentation](https://nextjs.org/docs)
-- [HeroUI Documentation](https://www.heroui.com/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [Framer Motion Documentation](https://www.framer.com/motion/)
 

@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Input } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -172,21 +171,20 @@ export default function ReturnsPage() {
                                 Kiểm tra trạng thái đổi trả
                             </h2>
                             <div className="flex gap-3">
-                                <Input
-                                    placeholder="Nhập mã đơn hàng (VD: UH-2024001)"
-                                    classNames={{
-                                        input: "font-body",
-                                        inputWrapper: "border border-divider bg-main hover:border-green-600/50"
-                                    }}
-                                    radius="none"
-                                    startContent={<MagnifyingGlassIcon className="w-5 h-5 text-muted" />}
-                                />
-                                <Button
-                                    className="px-8 bg-green-900 text-cream font-heading font-bold"
-                                    radius="none"
+                                <div className="relative group flex-1">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+                                        <MagnifyingGlassIcon className="w-5 h-5" />
+                                    </div>
+                                    <input
+                                        placeholder="Nhập mã đơn hàng (VD: UH-2024001)"
+                                        className="w-full h-14 pl-10 pr-4 bg-main border border-divider hover:border-green-600/50 focus:border-green-600 focus:outline-none transition-colors font-body"
+                                    />
+                                </div>
+                                <button
+                                    className="px-8 bg-green-900 text-cream font-heading font-bold h-14"
                                 >
                                     TRA CỨU
-                                </Button>
+                                </button>
                             </div>
                         </motion.div>
                     </div>
@@ -244,19 +242,16 @@ export default function ReturnsPage() {
                                 Đội ngũ chăm sóc khách hàng của UniHome luôn sẵn sàng hỗ trợ bạn 24/7
                             </p>
                             <div className="flex flex-wrap justify-center gap-4">
-                                <Button
-                                    className="px-8 py-6 bg-white text-green-900 font-heading font-bold"
-                                    radius="none"
+                                <button
+                                    className="px-8 py-6 bg-white text-green-900 font-heading font-bold hover:bg-gray-100 transition-colors"
                                 >
                                     GỌI HOTLINE: 1900-XXXX
-                                </Button>
-                                <Button
-                                    variant="bordered"
-                                    className="px-8 py-6 border-2 border-white text-white font-heading font-bold hover:bg-white hover:text-green-900"
-                                    radius="none"
+                                </button>
+                                <button
+                                    className="px-8 py-6 border-2 border-white text-white font-heading font-bold hover:bg-white hover:text-green-900 transition-colors"
                                 >
                                     CHAT VỚI TƯ VẤN VIÊN
-                                </Button>
+                                </button>
                             </div>
                         </motion.div>
                     </div>

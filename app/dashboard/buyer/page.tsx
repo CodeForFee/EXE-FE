@@ -2,7 +2,7 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image } from "@heroui/react";
+import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -23,13 +23,15 @@ import {
     SparklesIcon,
     GiftIcon,
     TicketIcon,
-    ArrowTrendingUpIcon,
-    EyeIcon,
     CalendarDaysIcon,
     ArrowPathIcon,
+    ChatBubbleLeftIcon,
+    EyeIcon
 } from "@heroicons/react/24/outline";
 import { StarIcon, HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
+import { products as allProducts } from "@/lib/data/products";
 
+// Mock Data
 const menuItems = [
     { icon: UserCircleIcon, label: "Tài khoản", id: "account" },
     { icon: ShoppingBagIcon, label: "Đơn hàng", id: "orders", badge: 3 },
@@ -40,9 +42,14 @@ const menuItems = [
     { icon: Cog6ToothIcon, label: "Cài đặt", id: "settings" },
 ];
 
-import { products as allProducts } from "@/lib/data/products";
+const stats = [
+    { label: "Đơn hàng", value: 12, icon: ShoppingBagIcon, color: "from-blue-500 to-indigo-600", bg: "bg-blue-100", textColor: "text-blue-600" },
+    { label: "Yêu thích", value: 8, icon: HeartIcon, color: "from-pink-500 to-rose-600", bg: "bg-rose-100", textColor: "text-rose-600" },
+    { label: "Điểm thưởng", value: "2,450", icon: GiftIcon, color: "from-amber-500 to-orange-600", bg: "bg-amber-100", textColor: "text-amber-600" },
+    { label: "Voucher", value: 3, icon: TicketIcon, color: "from-violet-500 to-purple-600", bg: "bg-violet-100", textColor: "text-violet-600" },
+];
 
-const orders = [
+const recentOrders = [
     {
         id: "UH-2024001",
         date: "15/12/2024",
@@ -72,15 +79,6 @@ const orders = [
     },
 ];
 
-const wishlistItems = allProducts.slice(4, 6).map(p => ({
-    id: p.id,
-    title: p.title,
-    price: p.price,
-    image: p.image,
-    rating: p.rating
-}));
-
-
 const statusConfig = {
     pending: { label: "Chờ xác nhận", bg: "bg-amber-100", text: "text-amber-700", icon: ClockIcon, dot: "bg-amber-500" },
     shipping: { label: "Đang giao", bg: "bg-blue-100", text: "text-blue-700", icon: TruckIcon, dot: "bg-blue-500" },
@@ -88,12 +86,13 @@ const statusConfig = {
     cancelled: { label: "Đã hủy", bg: "bg-red-100", text: "text-red-700", icon: XCircleIcon, dot: "bg-red-500" },
 };
 
-const stats = [
-    { label: "Đơn hàng", value: 12, icon: ShoppingBagIcon, color: "from-blue-500 to-indigo-600" },
-    { label: "Yêu thích", value: 8, icon: HeartIcon, color: "from-pink-500 to-rose-600" },
-    { label: "Điểm thưởng", value: "2,450", icon: GiftIcon, color: "from-amber-500 to-orange-600" },
-    { label: "Voucher", value: 3, icon: TicketIcon, color: "from-violet-500 to-purple-600" },
-];
+const wishlistItems = allProducts.slice(4, 6).map(p => ({
+    id: p.id,
+    title: p.title,
+    price: p.price,
+    image: p.image,
+    rating: p.rating
+}));
 
 export default function BuyerDashboard() {
     const [activeTab, setActiveTab] = useState("account");
@@ -122,15 +121,15 @@ export default function BuyerDashboard() {
                             <p className="text-muted font-body mt-2">Quản lý tài khoản và theo dõi đơn hàng của bạn</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button
-                                as={Link}
-                                href="/products"
-                                className="px-6 py-5 bg-gradient-to-r from-green-600 to-green-700 text-white font-heading font-bold text-sm flex items-center gap-2 shadow-lg shadow-green-200"
-                                radius="sm"
-                            >
-                                <ShoppingBagIcon className="w-5 h-5" />
-                                Tiếp tục mua sắm
-                            </Button>
+                            <Link href="/products" passHref legacyBehavior>
+                                <Button
+                                    className="px-6 py-5 bg-gradient-to-r from-green-600 to-green-700 text-white font-heading font-bold text-sm flex items-center gap-2 shadow-lg shadow-green-200"
+                                    radius="sm"
+                                >
+                                    <ShoppingBagIcon className="w-5 h-5" />
+                                    Tiếp tục mua sắm
+                                </Button>
+                            </Link>
                         </div>
                     </motion.div>
 
@@ -227,8 +226,8 @@ export default function BuyerDashboard() {
                                         transition={{ delay: 0.1 + i * 0.05 }}
                                         className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
                                     >
-                                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg mb-4`}>
-                                            <stat.icon className="w-6 h-6 text-white" />
+                                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.bg} ${stat.textColor} flex items-center justify-center shadow-sm mb-4`}>
+                                            <stat.icon className="w-6 h-6" />
                                         </div>
                                         <span className="text-3xl font-heading font-extrabold text-heading">{stat.value}</span>
                                         <p className="text-sm text-muted font-body">{stat.label}</p>
@@ -257,14 +256,14 @@ export default function BuyerDashboard() {
                                     </Button>
                                 </div>
                                 <div className="divide-y divide-gray-100">
-                                    {orders.map((order) => {
+                                    {recentOrders.map((order) => {
                                         const status = statusConfig[order.status as keyof typeof statusConfig];
                                         return (
                                             <div key={order.id} className="p-5 hover:bg-gray-50/50 transition-colors">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden">
-                                                            <Image src={order.items[0].image} alt="" className="w-full h-full object-cover" radius="none" removeWrapper />
+                                                            <img src={order.items[0].image} alt="" className="w-full h-full object-cover" />
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2 mb-1">
@@ -287,7 +286,7 @@ export default function BuyerDashboard() {
                                                         {order.status === "delivered" && (
                                                             <Button
                                                                 size="sm"
-                                                                variant="bordered"
+                                                                variant="outline"
                                                                 className="text-xs font-heading font-semibold border-green-200 text-green-700 hover:bg-green-50"
                                                                 radius="lg"
                                                             >
@@ -298,7 +297,7 @@ export default function BuyerDashboard() {
                                                         {order.status === "shipping" && (
                                                             <Button
                                                                 size="sm"
-                                                                variant="bordered"
+                                                                variant="outline"
                                                                 className="text-xs font-heading font-semibold border-blue-200 text-blue-700 hover:bg-blue-50"
                                                                 radius="lg"
                                                             >
@@ -350,7 +349,7 @@ export default function BuyerDashboard() {
                                     {wishlistItems.map((item) => (
                                         <div key={item.id} className="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group">
                                             <div className="w-20 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0">
-                                                <Image src={item.image} alt={item.title} className="w-full h-full object-cover" radius="none" removeWrapper />
+                                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-heading font-semibold text-heading text-sm truncate mb-1">{item.title}</h4>

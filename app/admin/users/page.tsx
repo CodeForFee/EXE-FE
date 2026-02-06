@@ -2,20 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { userService } from "@/lib/api/services/user";
-import {
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    User,
-    Chip,
-    Tooltip,
-    Button,
-    Spinner,
-    Pagination
-} from "@heroui/react";
 import { EyeIcon, NoSymbolIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -56,55 +42,6 @@ export default function AdminUsersPage() {
         }
     };
 
-    const renderCell = (user: any, columnKey: React.Key) => {
-        const cellValue = user[columnKey as keyof typeof user];
-
-        switch (columnKey) {
-            case "name":
-                return (
-                    <User
-                        avatarProps={{ radius: "lg", src: user.image }}
-                        description={user.email}
-                        name={user.fullName}
-                    >
-                        {user.email}
-                    </User>
-                );
-            case "role":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-sm capitalize">{cellValue}</p>
-                    </div>
-                );
-            case "status":
-                return (
-                    <Chip className="capitalize" color={statusColorMap[user.status]} size="sm" variant="flat">
-                        {cellValue}
-                    </Chip>
-                );
-            case "actions":
-                return (
-                    <div className="relative flex items-center gap-2">
-                        <Tooltip content="Details">
-                            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                                <EyeIcon className="w-5 h-5" />
-                            </span>
-                        </Tooltip>
-                        <Tooltip color="danger" content={user.status === 'ACTIVE' ? "Ban user" : "Unban user"}>
-                            <span
-                                className={`text-lg cursor-pointer active:opacity-50 ${user.status === 'ACTIVE' ? 'text-danger' : 'text-success'}`}
-                                onClick={() => handleStatusChange(user.id, user.status)}
-                            >
-                                {user.status === 'ACTIVE' ? <NoSymbolIcon className="w-5 h-5" /> : <CheckCircleIcon className="w-5 h-5" />}
-                            </span>
-                        </Tooltip>
-                    </div>
-                );
-            default:
-                return cellValue;
-        }
-    };
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -117,33 +54,98 @@ export default function AdminUsersPage() {
             <div className="bg-white p-6 rounded-xl border border-divider shadow-sm">
                 {isLoading ? (
                     <div className="flex justify-center p-12">
-                        <Spinner size="lg" color="success" />
+                        <div className="w-10 h-10 border-4 border-green-200 border-t-green-700 rounded-full animate-spin"></div>
                     </div>
                 ) : (
                     <>
-                        <Table aria-label="Users table">
-                            <TableHeader>
-                                <TableColumn key="name">USER</TableColumn>
-                                <TableColumn key="role">ROLE</TableColumn>
-                                <TableColumn key="status">STATUS</TableColumn>
-                                <TableColumn key="actions">ACTIONS</TableColumn>
-                            </TableHeader>
-                            <TableBody items={data?.content || []}>
-                                {(item: any) => (
-                                    <TableRow key={item.id}>
-                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                        <div className="flex justify-center mt-4">
-                            <Pagination
-                                total={data?.totalPages || 1}
-                                page={page}
-                                onChange={setPage}
-                                color="success"
-                            />
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-divider">
+                                        <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">USER</th>
+                                        <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">ROLE</th>
+                                        <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">STATUS</th>
+                                        <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm text-center">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data?.content?.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="py-8 text-center text-muted">No users found</td>
+                                        </tr>
+                                    ) : (
+                                        data?.content?.map((item) => (
+                                            <tr key={item.id} className="border-b border-divider last:border-0 hover:bg-gray-50 transition-colors">
+                                                <td className="py-4 px-4">
+                                                    <div className="flex items-center gap-3">
+                                                        {item.image ? (
+                                                            <img src={item.image} alt={item.fullName} className="w-10 h-10 rounded-lg object-cover" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded-lg bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm">
+                                                                {item.fullName?.charAt(0) || "U"}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="font-semibold text-heading text-sm">{item.fullName}</p>
+                                                            <p className="text-xs text-muted">{item.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-4">
+                                                    <span className="text-sm font-medium capitalize text-gray-700">{item.role}</span>
+                                                </td>
+                                                <td className="py-4 px-4">
+                                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${item.status === 'ACTIVE' ? "bg-green-100 text-green-800" :
+                                                        item.status === 'BANNED' ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-4">
+                                                    <div className="flex items-center justify-center gap-3">
+                                                        <button
+                                                            title="Details"
+                                                            className="text-gray-400 hover:text-green-700 transition-colors"
+                                                        >
+                                                            <EyeIcon className="w-5 h-5" />
+                                                        </button>
+                                                        <button
+                                                            title={item.status === 'ACTIVE' ? "Ban user" : "Unban user"}
+                                                            className={`transition-colors ${item.status === 'ACTIVE' ? 'text-red-400 hover:text-red-700' : 'text-green-400 hover:text-green-700'}`}
+                                                            onClick={() => handleStatusChange(item.id, item.status)}
+                                                        >
+                                                            {item.status === 'ACTIVE' ? <NoSymbolIcon className="w-5 h-5" /> : <CheckCircleIcon className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
+
+                        {data && data.totalPages > 1 && (
+                            <div className="flex justify-center mt-6 gap-2">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="px-3 py-1 rounded bg-gray-100 text-gray-600 disabled:opacity-50 hover:bg-gray-200 text-sm transition-colors"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-3 py-1 text-sm font-medium text-gray-700 flex items-center">
+                                    Page {page} of {data.totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                                    disabled={page === data.totalPages}
+                                    className="px-3 py-1 rounded bg-gray-100 text-gray-600 disabled:opacity-50 hover:bg-gray-200 text-sm transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

@@ -12,7 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "@/lib/api/services/user";
 import { furnitureService } from "@/lib/api/services/furniture";
 import { categoryService } from "@/lib/api/services/category";
-import { Spinner } from "@heroui/react";
+import { SplinePointer } from "lucide-react";
+
 
 export default function AdminDashboard() {
     // Fetch Stats
@@ -71,7 +72,7 @@ export default function AdminDashboard() {
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
-                <Spinner size="lg" color="success" />
+                <SplinePointer size="lg" color="success" />
             </div>
         );
     }

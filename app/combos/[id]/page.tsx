@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
@@ -55,14 +54,12 @@ export default function ComboDetailPage() {
                     <div className="container mx-auto px-4 text-center py-20">
                         <h1 className="text-3xl font-heading font-bold text-heading mb-4">Không tìm thấy combo</h1>
                         <p className="text-gray-500 mb-8">Combo bạn đang tìm kiếm không tồn tại.</p>
-                        <Button
-                            as={Link}
+                        <Link
                             href="/combos"
-                            className="px-8 py-6 bg-green-900 text-cream font-heading font-bold"
-                            radius="none"
+                            className="px-8 py-6 bg-green-900 text-cream font-heading font-bold inline-block"
                         >
                             QUAY LẠI DANH SÁCH COMBO
-                        </Button>
+                        </Link>
                     </div>
                 </main>
                 <Footer />
@@ -217,24 +214,20 @@ export default function ComboDetailPage() {
 
                                 {/* Add to Cart */}
                                 <div className="space-y-4 mb-8">
-                                    <Button
+                                    <button
                                         className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all flex items-center justify-center gap-3"
-                                        radius="none"
                                         onClick={handleAddToCart}
                                     >
                                         <ShoppingCartIcon className="w-5 h-5" />
                                         THÊM COMBO VÀO GIỎ HÀNG
-                                    </Button>
-                                    <Button
-                                        as={Link}
+                                    </button>
+                                    <Link
                                         href="/checkout"
-                                        className="w-full py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all"
-                                        radius="none"
-                                        variant="bordered"
+                                        className="w-full py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all flex items-center justify-center"
                                         onClick={handleAddToCart}
                                     >
                                         MUA NGAY
-                                    </Button>
+                                    </Link>
                                 </div>
 
                                 {/* Trust Badges */}

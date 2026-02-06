@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Input } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -17,7 +16,6 @@ import {
     MapPinIcon
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { useUserStore } from "@/lib/stores/useUserStore";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/api/services/auth";
 import { useLoadingStore } from "@/lib/stores/useLoadingStore";
@@ -25,7 +23,6 @@ import { toast } from "react-toastify";
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { register, clearError } = useUserStore(); // removed isLoading, error
     const { setIsLoading } = useLoadingStore();
 
     const [firstName, setFirstName] = useState("");
@@ -45,19 +42,19 @@ export default function RegisterPage() {
 
         setIsLoading(true, "Đang đăng ký...");
         try {
-            await register({
+            await authService.register({
                 fullName: `${firstName} ${lastName}`.trim(),
                 email,
                 phone,
                 password,
                 address
             });
-            // Redirect to login or verification page
+            
             toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
             setIsLoading(false);
             router.push('/login');
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Đăng ký thất bại");
+            toast.error(err.message || "Đăng ký thất bại");
             setIsLoading(false);
         }
     };
@@ -145,33 +142,29 @@ export default function RegisterPage() {
                                             <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
                                                 <UserIcon className="w-4 h-4" /> Họ
                                             </label>
-                                            <Input
-                                                placeholder="Nguyễn"
-                                                variant="bordered"
-                                                classNames={{
-                                                    inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                                }}
-                                                radius="none"
-                                                value={firstName}
-                                                onChange={(e) => setFirstName(e.target.value)}
-                                                isRequired
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Nguyễn"
+                                                    className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                    value={firstName}
+                                                    onChange={(e) => setFirstName(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase">
                                                 Tên
                                             </label>
-                                            <Input
-                                                placeholder="Văn A"
-                                                variant="bordered"
-                                                classNames={{
-                                                    inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                                }}
-                                                radius="none"
-                                                value={lastName}
-                                                onChange={(e) => setLastName(e.target.value)}
-                                                isRequired
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    placeholder="Văn A"
+                                                    className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                    value={lastName}
+                                                    onChange={(e) => setLastName(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
@@ -180,18 +173,16 @@ export default function RegisterPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
                                             <EnvelopeIcon className="w-4 h-4" /> Email
                                         </label>
-                                        <Input
-                                            type="email"
-                                            placeholder="email@example.com"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                            }}
-                                            radius="none"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type="email"
+                                                placeholder="email@example.com"
+                                                className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Số điện thoại */}
@@ -199,18 +190,16 @@ export default function RegisterPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
                                             <PhoneIcon className="w-4 h-4" /> Số điện thoại
                                         </label>
-                                        <Input
-                                            type="tel"
-                                            placeholder="0123 456 789"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                            }}
-                                            radius="none"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type="tel"
+                                                placeholder="0123 456 789"
+                                                className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Address */}
@@ -218,17 +207,15 @@ export default function RegisterPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
                                             <MapPinIcon className="w-4 h-4" /> Địa chỉ
                                         </label>
-                                        <Input
-                                            placeholder="123 Đường ABC, Phường X, Quận Y"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                            }}
-                                            radius="none"
-                                            value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                placeholder="123 Đường ABC, Phường X, Quận Y"
+                                                className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={address}
+                                                onChange={(e) => setAddress(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Mật khẩu */}
@@ -236,18 +223,16 @@ export default function RegisterPage() {
                                         <label className="text-[11px] font-heading font-bold text-muted tracking-widest uppercase flex items-center gap-2">
                                             <LockClosedIcon className="w-4 h-4" /> Mật khẩu
                                         </label>
-                                        <Input
-                                            type="password"
-                                            placeholder="Tối thiểu 8 ký tự"
-                                            variant="bordered"
-                                            classNames={{
-                                                inputWrapper: "border border-divider bg-card hover:border-green-700 focus-within:!border-green-700 h-12"
-                                            }}
-                                            radius="none"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            isRequired
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type="password"
+                                                placeholder="Tối thiểu 8 ký tự"
+                                                className="w-full h-12 px-4 border border-divider bg-card hover:border-green-700 focus:border-green-700 focus:outline-none transition-colors"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* CHECKBOX NGANG HÀNG CHUẨN */}
@@ -270,13 +255,12 @@ export default function RegisterPage() {
                                         </span>
                                     </div>
 
-                                    <Button
+                                    <button
                                         type="submit"
-                                        className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all shadow-md"
-                                        radius="none"
+                                        className="w-full py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-widest hover:bg-green-800 transition-all shadow-md flex items-center justify-center"
                                     >
                                         ĐĂNG KÝ NGAY
-                                    </Button>
+                                    </button>
                                 </form>
 
                                 {/* Social Login */}
@@ -291,10 +275,9 @@ export default function RegisterPage() {
                                     </div>
 
                                     <div className="mt-6">
-                                        <Button
-                                            variant="bordered"
-                                            className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3"
-                                            radius="none"
+                                        <button
+                                            type="button"
+                                            className="w-full py-6 border border-divider font-heading font-medium hover:bg-secondary flex items-center justify-center gap-3 transition-colors"
                                             onClick={() => authService.googleLogin()}
                                         >
                                             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -304,7 +287,7 @@ export default function RegisterPage() {
                                                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                             </svg>
                                             Tiếp tục với Google
-                                        </Button>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Spinner } from "@heroui/react";
 import { CameraIcon, TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -103,22 +102,19 @@ export default function ImageUpload({
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                                isIconOnly
-                                color="danger"
-                                variant="flat"
-                                size="sm"
-                                onPress={handleRemove}
-                                className="bg-white/90 hover:bg-white text-danger"
+                            <button
+                                type="button"
+                                onClick={handleRemove}
+                                className="bg-white/90 hover:bg-white text-danger p-2 rounded-lg transition-colors"
                             >
-                                <TrashIcon className="w-5 h-5" />
-                            </Button>
+                                <TrashIcon className="w-5 h-5 text-red-500" />
+                            </button>
                         </div>
                     </div>
                 ) : (
                     <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-divider rounded-xl cursor-pointer hover:border-success-500 hover:bg-success-50 transition-colors group">
                         {loading ? (
-                            <Spinner size="sm" color="success" />
+                            <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
                         ) : (
                             <>
                                 <CameraIcon className="w-8 h-8 text-default-300 group-hover:text-success-500 transition-colors" />

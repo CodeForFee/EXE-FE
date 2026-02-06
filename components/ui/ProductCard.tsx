@@ -1,6 +1,5 @@
 "use client";
 
-import { Image } from "@heroui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 

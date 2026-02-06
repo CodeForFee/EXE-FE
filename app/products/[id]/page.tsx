@@ -15,7 +15,7 @@ interface Props {
 
 // Helper to map response to Product type
 const mapToProduct = (p: FurnitureResponse): Product => ({
-    id: p.id,
+    id: p.furnitureId,
     title: p.name,
     price: p.finalPrice || p.price,
     originalPrice: p.price !== p.finalPrice ? p.price : undefined,

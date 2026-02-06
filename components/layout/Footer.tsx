@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@heroui/react";
+import Link from "next/link";
 import { Facebook, Instagram, Twitter, MessageCircle } from "lucide-react";
 
 export default function Footer() {

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button, Image } from "@heroui/react";
 import Link from "next/link";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { useLoadingStore } from "@/lib/stores/useLoadingStore";
@@ -18,6 +17,7 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
     TagIcon,
+    ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon, HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 
@@ -244,42 +244,49 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-4 mb-6">
-                            <Button
-                                onClick={addToCart}
-                                className="flex-1 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all"
-                                radius="none"
+                        <div className="flex flex-col gap-3 mb-6">
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={addToCart}
+                                    className="flex-1 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all"
+                                >
+                                    THÊM VÀO GIỎ HÀNG
+                                </button>
+                                <button
+                                    onClick={() => setIsFavorite(!isFavorite)}
+                                    className={`w-14 h-14 border-2 flex items-center justify-center transition-all ${isFavorite
+                                        ? 'border-terracotta bg-terracotta/10'
+                                        : 'border-divider hover:border-terracotta'
+                                        }`}
+                                >
+                                    {isFavorite ? (
+                                        <HeartSolidIcon className="w-6 h-6 text-terracotta" />
+                                    ) : (
+                                        <HeartIcon className="w-6 h-6 text-muted" />
+                                    )}
+                                </button>
+                                <button className="w-14 h-14 border-2 border-divider flex items-center justify-center hover:border-heading transition-all">
+                                    <ShareIcon className="w-6 h-6 text-muted" />
+                                </button>
+                            </div>
+                            {/* Nút chat sản phẩm (tạm ẩn để chờ kết nối chat realtime BE)
+                            <Link
+                                href={`/messages?productId=${product.id}`}
+                                className="w-full py-4 border border-divider text-sm font-heading font-semibold text-heading hover:border-green-700 hover:text-green-700 flex items-center justify-center gap-2 transition-colors"
                             >
-                                THÊM VÀO GIỎ HÀNG
-                            </Button>
-                            <button
-                                onClick={() => setIsFavorite(!isFavorite)}
-                                className={`w-14 h-14 border-2 flex items-center justify-center transition-all ${isFavorite
-                                    ? 'border-terracotta bg-terracotta/10'
-                                    : 'border-divider hover:border-terracotta'
-                                    }`}
-                            >
-                                {isFavorite ? (
-                                    <HeartSolidIcon className="w-6 h-6 text-terracotta" />
-                                ) : (
-                                    <HeartIcon className="w-6 h-6 text-muted" />
-                                )}
-                            </button>
-                            <button className="w-14 h-14 border-2 border-divider flex items-center justify-center hover:border-heading transition-all">
-                                <ShareIcon className="w-6 h-6 text-muted" />
-                            </button>
+                                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                Chat với UniHome về sản phẩm này
+                            </Link>
+                            */}
                         </div>
 
-                        <Button
-                            as={Link}
+                        <Link
                             href="/checkout"
-                            variant="bordered"
                             className="w-full py-7 border-2 border-green-900 text-green-900 font-heading font-bold text-base tracking-wide hover:bg-green-900 hover:text-cream transition-all flex items-center justify-center"
-                            radius="none"
                             onClick={addToCart}
                         >
                             MUA NGAY
-                        </Button>
+                        </Link>
 
                         {/* Shipping info */}
                         <div className="mt-8 p-6 bg-green-50 border border-green-200">

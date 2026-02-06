@@ -1,6 +1,5 @@
-import { apiClient } from '../client';
+import http from '@/lib/http';
 import {
-    ApiResponse,
     Notification,
     NotificationRequest,
     Page
@@ -13,14 +12,10 @@ export const notificationService = {
         sort = 'createdAt',
         direction = 'DESC'
     ): Promise<Page<Notification>> => {
-        const params = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sort,
-            direction
+        const response = await http.get<Page<Notification>>('/notifications/unread', {
+            params: { page, size, sort, direction }
         });
-        const response = await apiClient.get<ApiResponse<Page<Notification>>>(`/notifications/unread?${params.toString()}`);
-        return response.data.data;
+        return response.data;
     },
 
     getAllNotifications: async (
@@ -29,22 +24,18 @@ export const notificationService = {
         sort = 'createdAt',
         direction = 'DESC'
     ): Promise<Page<Notification>> => {
-        const params = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sort,
-            direction
+        const response = await http.get<Page<Notification>>('/notifications/latest-unread', {
+            params: { page, size, sort, direction }
         });
-        const response = await apiClient.get<ApiResponse<Page<Notification>>>(`/notifications/latest-unread?${params.toString()}`);
-        return response.data.data;
+        return response.data;
     },
 
     createTestNotification: async (request: NotificationRequest): Promise<Notification> => {
-        const response = await apiClient.post<ApiResponse<Notification>>('/notifications', request);
-        return response.data.data;
+        const response = await http.post<Notification>('/notifications', request);
+        return response.data;
     },
 
     markRead: async (id: string): Promise<void> => {
-        await apiClient.post<ApiResponse<void>>(`/notifications/read?id=${id}`);
+        await http.post<void>('/notifications/read', {}, { params: { id } });
     }
 };

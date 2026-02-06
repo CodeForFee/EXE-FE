@@ -2,7 +2,7 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image } from "@heroui/react";
+import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -33,6 +33,7 @@ import {
     ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
+import { products as allProducts } from "@/lib/data/products";
 
 const menuItems = [
     { icon: ChartBarIcon, label: "Dashboard", id: "dashboard" },
@@ -50,8 +51,6 @@ const stats = [
     { label: "Lượt xem hôm nay", value: "1.2K", subValue: "views", change: "-5%", up: false, icon: EyeIcon, color: "from-amber-500 to-orange-600" },
 ];
 
-import { products as allProducts } from "@/lib/data/products";
-
 const products = allProducts.slice(0, 4).map((p, i) => ({
     id: p.id,
     title: p.title,
@@ -63,7 +62,6 @@ const products = allProducts.slice(0, 4).map((p, i) => ({
     status: i === 2 ? "out_of_stock" : "active",
     trend: i === 0 ? "hot" : i === 2 ? "bestseller" : null,
 }));
-
 
 const recentOrders = [
     { id: "UH-001", customer: "Nguyễn Văn A", avatar: "N", total: 1250000, status: "pending", time: "5 phút trước", items: 1 },
@@ -163,7 +161,7 @@ export default function SellerDashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                             <Button
-                                variant="bordered"
+                                variant="outline"
                                 className="px-5 py-5 border-2 border-divider text-heading font-heading font-bold text-sm flex items-center gap-2 hover:border-green-600 transition-colors"
                                 radius="sm"
                             >
@@ -327,7 +325,7 @@ export default function SellerDashboard() {
                                             <h2 className="font-heading font-bold text-heading">Sản phẩm của bạn</h2>
                                         </div>
                                         <Button
-                                            variant="light"
+                                            variant="ghost"
                                             className="text-sm font-heading font-bold text-green-700 flex items-center gap-1"
                                             radius="sm"
                                         >
@@ -338,7 +336,7 @@ export default function SellerDashboard() {
                                         {products.map((product) => (
                                             <div key={product.id} className="p-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors group">
                                                 <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                                                    <Image src={product.image} alt={product.title} className="w-full h-full object-cover" radius="none" removeWrapper />
+                                                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">
@@ -433,7 +431,7 @@ export default function SellerDashboard() {
                                     </div>
                                     <div className="p-4 border-t border-gray-100">
                                         <Button
-                                            variant="bordered"
+                                            variant="outline"
                                             className="w-full py-5 border-2 border-dashed border-gray-200 text-gray-500 font-heading font-semibold text-sm hover:border-green-300 hover:text-green-600 transition-colors"
                                             radius="lg"
                                         >

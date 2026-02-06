@@ -1,6 +1,5 @@
-import { apiClient } from '../client';
+import http from '@/lib/http';
 import {
-    ApiResponse,
     CategoryResponse,
     CreateCategoryRequest,
     Page,
@@ -14,33 +13,33 @@ export const categoryService = {
         sortBy = 'name',
         sortDir = 'ASC'
     ): Promise<Page<CategoryResponse>> => {
-        const response = await apiClient.get<ApiResponse<Page<CategoryResponse>>>(
-            `/category?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-        );
-        return response.data.data;
+        const response = await http.get<Page<CategoryResponse>>('/category', {
+            params: { page, size, sortBy, sortDir }
+        });
+        return response.data;
     },
 
     getAllCategoriesNoPaging: async (): Promise<CategoryResponse[]> => {
-        const response = await apiClient.get<ApiResponse<CategoryResponse[]>>('/category/all');
-        return response.data.data;
+        const response = await http.get<CategoryResponse[]>('/category/all');
+        return response.data;
     },
 
     getCategoryById: async (id: string): Promise<CategoryResponse> => {
-        const response = await apiClient.get<ApiResponse<CategoryResponse>>(`/category/${id}`);
-        return response.data.data;
+        const response = await http.get<CategoryResponse>(`/category/${id}`);
+        return response.data;
     },
 
     createCategory: async (request: CreateCategoryRequest): Promise<CategoryResponse> => {
-        const response = await apiClient.post<ApiResponse<CategoryResponse>>('/category', request);
-        return response.data.data;
+        const response = await http.post<CategoryResponse>('/category', request);
+        return response.data;
     },
 
     updateCategory: async (id: string, request: UpdateCategoryRequest): Promise<CategoryResponse> => {
-        const response = await apiClient.put<ApiResponse<CategoryResponse>>(`/category/${id}`, request);
-        return response.data.data;
+        const response = await http.put<CategoryResponse>(`/category/${id}`, request);
+        return response.data;
     },
 
     deleteCategory: async (id: string): Promise<void> => {
-        await apiClient.delete<ApiResponse<void>>(`/category/${id}`);
+        await http.delete<void>(`/category/${id}`);
     }
 };

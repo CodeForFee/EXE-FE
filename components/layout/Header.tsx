@@ -1,31 +1,19 @@
 "use client";
 
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  NavbarMenuToggle,
-  NavbarMenu,
-  NavbarMenuItem,
-  Link,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Avatar,
-} from "@heroui/react";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { useUserStore } from "@/lib/stores/useUserStore";
-import { ShoppingBagIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { useSessionStore } from "@/lib/stores/useSessionStore";
+import { authService } from "@/lib/api/services/auth";
+import { ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { getTotalItems } = useCartStore();
-  const { user, logout } = useUserStore();
+  const user = useSessionStore((state) => state.user);
+  const clearSession = useSessionStore((state) => state.clearSession);
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
@@ -33,9 +21,18 @@ export default function Header() {
     setIsClient(true);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await authService.logoutClient();
+      await authService.logoutServer();
+      clearSession();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout error:", error);
+      clearSession();
+      router.push("/login");
+    }
   };
 
   const menuItems = [
@@ -91,13 +88,7 @@ export default function Header() {
 
               {/* Actions */}
               <div className="flex items-center gap-4">
-                {/* Messages */}
-                <Link
-                  href="/messages"
-                  className="relative p-2 hover:bg-secondary transition-colors"
-                >
-                  <ChatBubbleLeftRightIcon className="w-6 h-6 text-heading" />
-                </Link>
+                {/* Messages icon tạm ẩn – sẽ bật lại khi chat realtime hoàn thiện */}
 
                 {/* Cart */}
                 <Link
@@ -114,43 +105,53 @@ export default function Header() {
 
                 {/* User Menu / Login Buttons */}
                 {isClient && user ? (
-                  <Dropdown placement="bottom-end">
-                    <DropdownTrigger>
-                      <button className="outline-none focus:outline-none">
-                        {user.image ? (
-                          <img
-                            src={user.image}
-                            alt="Avatar"
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white bg-green-900 shadow-sm"
-                          />
-                        ) : (
-                          <Avatar
-                            isBordered
-                            className="transition-transform bg-green-900 text-cream font-bold"
-                            color="success"
-                            radius="full"
-                            name={user.fullName ? user.fullName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : "U")}
-                            size="sm"
-                          />
-                        )}
-                      </button>
-                    </DropdownTrigger>
-                    <DropdownMenu aria-label="Profile Actions" variant="flat" className="bg-white border border-divider rounded-lg shadow-medium p-2">
-                      <DropdownItem key="profile" className="h-14 gap-2" textValue={`Tài khoản: ${user.email}`}>
-                        <p className="font-semibold">Tài khoản</p>
-                        <p className="font-semibold">{user.email}</p>
-                      </DropdownItem>
-                      <DropdownItem key="settings" href="/profile" textValue="Hồ sơ của tôi">
-                        Hồ sơ của tôi
-                      </DropdownItem>
-                      <DropdownItem key="orders" href="/orders" textValue="Đơn hàng">
-                        Đơn hàng
-                      </DropdownItem>
-                      <DropdownItem key="logout" color="danger" onClick={handleLogout} textValue="Đăng xuất">
-                        Đăng xuất
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
+                      className="outline-none focus:outline-none"
+                    >
+                      {user.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={user.image}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-white bg-green-900 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-green-900 flex items-center justify-center text-cream font-bold border-2 border-white shadow-sm">
+                          {user.fullName ? user.fullName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : "U")}
+                        </div>
+                      )}
+                    </button>
+
+                    {isProfileOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-divider rounded-lg shadow-lg py-1 z-50">
+                        <div className="px-4 py-2 border-b border-divider">
+                          <p className="text-xs text-muted">Tài khoản</p>
+                          <p className="text-sm font-semibold truncate">{user.email}</p>
+                        </div>
+                        <Link href="/profile" className="block px-4 py-2 text-sm text-body hover:bg-secondary" onClick={() => setIsProfileOpen(false)}>
+                          Hồ sơ của tôi
+                        </Link>
+                        <Link href="/orders" className="block px-4 py-2 text-sm text-body hover:bg-secondary" onClick={() => setIsProfileOpen(false)}>
+                          Đơn hàng
+                        </Link>
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setIsProfileOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          Đăng xuất
+                        </button>
+                      </div>
+                    )}
+                    {/* Overlay to close menu */}
+                    {isProfileOpen && (
+                      <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)}></div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <Link
@@ -159,14 +160,12 @@ export default function Header() {
                     >
                       Đăng nhập
                     </Link>
-                    <Button
-                      as={Link}
+                    <Link
                       href="/register"
-                      className="hidden md:flex px-6 py-5 bg-green-900 text-cream font-heading font-bold text-[12px] tracking-[0.1em] uppercase hover:bg-green-700 transition-all duration-300"
-                      radius="none"
+                      className="hidden md:flex px-6 py-2 bg-green-900 text-cream font-heading font-bold text-[12px] tracking-[0.1em] uppercase hover:bg-green-700 transition-all duration-300"
                     >
                       Đăng ký
-                    </Button>
+                    </Link>
                   </>
                 )}
 
@@ -204,7 +203,14 @@ export default function Header() {
                 {isClient && user ? (
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-3">
-                      <Avatar key={user.image} src={user.image} size="sm" />
+                      {user.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={user.image} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-green-900 flex items-center justify-center text-cream font-bold text-xs">
+                          {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                        </div>
+                      )}
                       <span className="font-heading font-bold">{user.fullName}</span>
                     </div>
                     <Link href="/profile" onClick={() => setIsMenuOpen(false)}>Hồ sơ</Link>

@@ -1,4 +1,4 @@
-import { apiClient } from '../client';
+import http from '@/lib/http';
 import {
     ApiResponse,
     AuthenticationRequest,
@@ -9,61 +9,94 @@ import {
     UserResponse,
     VerifyTokenResponse
 } from '../types';
-import Cookies from 'js-cookie';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const authService = {
+    /**
+     * Register a new user
+     */
     register: async (request: RegistrationRequest): Promise<UserResponse> => {
-        const response = await apiClient.post<ApiResponse<UserResponse>>('/auth/register', request);
-        return response.data.data;
+        const response = await http.post<UserResponse>('/auth/register', request);
+        return response.data;
     },
 
-    login: async (request: AuthenticationRequest): Promise<AuthenticationResponse> => {
-        const response = await apiClient.post<ApiResponse<AuthenticationResponse>>('/auth/login', request);
-        if (response.data.data.token) {
-            Cookies.set('accessToken', response.data.data.token, { expires: 7 });
-            if (response.data.data.userId) {
-                Cookies.set('userId', response.data.data.userId, { expires: 7 });
-            }
+    /**
+     * Login - calls backend and then sets httpOnly cookies via API route
+     */
+    loginClient: async (request: AuthenticationRequest): Promise<AuthenticationResponse> => {
+        const response = await http.post<AuthenticationResponse>('/auth/login', request, {
+            skipAuth: true
+        });
+        return response.data;
+    },
+
+    /**
+     * Set cookies on server side after successful login
+     */
+    loginServer: async (body: { accessToken: string; refreshToken?: string }): Promise<void> => {
+        await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+    },
+
+    /**
+     * Logout - clears backend session and httpOnly cookies
+     */
+    logoutClient: async (): Promise<void> => {
+        try {
+            await http.post<void>('/auth/logout', {});
+        } catch (error) {
+            console.error('Failed to logout from backend:', error);
         }
-        return response.data.data;
     },
 
-    refresh: async (refreshToken?: string): Promise<AuthenticationResponse> => {
-        const response = await apiClient.post<ApiResponse<AuthenticationResponse>>('/auth/refresh');
-        if (response.data.data.token) {
-            Cookies.set('accessToken', response.data.data.token, { expires: 7 });
-            // Refresh usually doesn't return userId, but if it does, set it.
-            // AuthenticationResponse interface has userId.
-            if (response.data.data.userId) {
-                Cookies.set('userId', response.data.data.userId, { expires: 7 });
-            }
-        }
-        return response.data.data;
+    /**
+     * Clear cookies on server side
+     */
+    logoutServer: async (): Promise<void> => {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+        });
     },
 
+    /**
+     * Verify email token
+     */
     verifyToken: async (token: string): Promise<VerifyTokenResponse> => {
-        const response = await apiClient.get<ApiResponse<VerifyTokenResponse>>(`/auth/verify?token=${token}`);
-        return response.data.data;
+        const response = await http.get<VerifyTokenResponse>(`/auth/verify`, {
+            params: { token },
+            skipAuth: true
+        });
+        return response.data;
     },
 
-    logout: async (): Promise<void> => {
-        await apiClient.post<ApiResponse<void>>('/auth/logout');
-        Cookies.remove('accessToken');
-        Cookies.remove('userId');
-    },
-
+    /**
+     * Introspect token validity
+     */
     introspect: async (request: IntrospectRequest): Promise<IntrospectTokenResponse> => {
-        const response = await apiClient.post<ApiResponse<IntrospectTokenResponse>>('/auth/introspect', request);
-        return response.data.data;
+        const response = await http.post<IntrospectTokenResponse>('/auth/introspect', request);
+        return response.data;
     },
 
+    /**
+     * Resend verification email
+     */
     resendVerification: async (email: string): Promise<UserResponse> => {
-        const response = await apiClient.post<ApiResponse<UserResponse>>(`/auth/resend?email=${email}`);
-        return response.data.data;
+        const response = await http.post<UserResponse>(`/auth/resend`, { email }, {
+            skipAuth: true
+        });
+        return response.data;
     },
 
+    /**
+     * Google OAuth login - redirects to backend
+     */
     googleLogin: () => {
-        // This usually redirects the browser to the backend Google auth endpoint
-        window.location.href = `${apiClient.defaults.baseURL}/auth/google`;
+        window.location.href = `${API_URL}/auth/google`;
     }
 };

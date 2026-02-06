@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@heroui/react";
 import Link from "next/link";
 import { TruckIcon } from "@heroicons/react/24/outline";
 
@@ -22,23 +21,20 @@ export default function HomeCTA() {
                         Đăng ký ngay để nhận ưu đãi độc quyền và cập nhật bộ sưu tập mới nhất.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                            as={Link}
-                            href="/register"
-                            className="px-10 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all"
-                            radius="none"
-                        >
-                            ĐĂNG KÝ MIỄN PHÍ
-                        </Button>
-                        <Button
-                            as={Link}
-                            href="/products"
-                            variant="bordered"
-                            className="px-10 py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all"
-                            radius="none"
-                        >
-                            XEM SẢN PHẨM
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Link
+                                href="/register"
+                                className="px-10 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all inline-flex items-center justify-center"
+                            >
+                                ĐĂNG KÝ MIỄN PHÍ
+                            </Link>
+                            <Link
+                                href="/products"
+                                className="px-10 py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all inline-flex items-center justify-center"
+                            >
+                                XEM SẢN PHẨM
+                            </Link>
+                        </div>
                     </div>
                 </motion.div>
             </div>

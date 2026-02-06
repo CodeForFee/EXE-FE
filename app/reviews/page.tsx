@@ -2,7 +2,6 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button, Image } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import {
@@ -227,7 +226,7 @@ export default function ReviewsPage() {
                                     {/* Product */}
                                     <div className="flex items-center gap-3 mb-4 p-3 bg-secondary">
                                         <div className="w-10 h-10 overflow-hidden">
-                                            <Image src={review.productImage} alt="" className="w-full h-full object-cover" radius="none" removeWrapper />
+                                            <img src={review.productImage} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <span className="text-sm font-heading text-heading">{review.product}</span>
                                     </div>
@@ -240,7 +239,7 @@ export default function ReviewsPage() {
                                         <div className="flex gap-2 mb-4">
                                             {review.images.map((img, j) => (
                                                 <div key={j} className="w-24 h-24 overflow-hidden border border-divider">
-                                                    <Image src={img} alt="" className="w-full h-full object-cover" radius="none" removeWrapper />
+                                                    <img src={img} alt="" className="w-full h-full object-cover" />
                                                 </div>
                                             ))}
                                         </div>
@@ -262,13 +261,11 @@ export default function ReviewsPage() {
 
                             {/* Load More */}
                             <div className="text-center pt-8">
-                                <Button
+                                <button
                                     className="px-12 py-6 border-2 border-heading/20 text-heading font-heading font-bold text-sm tracking-wide hover:bg-heading hover:text-inverse transition-all"
-                                    radius="none"
-                                    variant="bordered"
                                 >
                                     XEM THÊM ĐÁNH GIÁ
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     </div>

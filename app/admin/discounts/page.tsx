@@ -2,28 +2,16 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { discountService } from "@/lib/api/services/discount";
-import {
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Button,
-    Spinner,
-    Chip,
-    Tooltip,
-    useDisclosure
-} from "@heroui/react";
 import { PlusIcon, TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import { DiscountResponse } from "@/lib/api/types";
 import { useState } from "react";
 import DiscountModal from "@/components/admin/modals/DiscountModal";
+import Button from "@/components/ui/Button";
 
 export default function AdminDiscountsPage() {
     const queryClient = useQueryClient();
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDiscount, setSelectedDiscount] = useState<DiscountResponse | null>(null);
 
     const { data, isLoading } = useQuery<DiscountResponse[]>({
@@ -45,12 +33,12 @@ export default function AdminDiscountsPage() {
 
     const handleEdit = (discount: DiscountResponse) => {
         setSelectedDiscount(discount);
-        onOpen();
+        setIsModalOpen(true);
     };
 
     const handleCreate = () => {
         setSelectedDiscount(null);
-        onOpen();
+        setIsModalOpen(true);
     };
 
     const handleDelete = (id: string) => {
@@ -59,53 +47,9 @@ export default function AdminDiscountsPage() {
         }
     };
 
-    const renderCell = (item: any, columnKey: React.Key) => {
-        const cellValue = item[columnKey as keyof typeof item];
-
-        switch (columnKey) {
-            case "percentage":
-                return (
-                    <span className="font-bold text-green-700">
-                        {(item.percentage * 100).toFixed(0)}%
-                    </span>
-                );
-            case "dates":
-                return (
-                    <div className="flex flex-col text-xs">
-                        <span>Start: {new Date(item.startDate).toLocaleDateString("vi-VN")}</span>
-                        <span>End: {new Date(item.endDate).toLocaleDateString("vi-VN")}</span>
-                    </div>
-                );
-            case "isActive":
-                return (
-                    <Chip color={item.isActive ? "success" : "default"} size="sm" variant="flat">
-                        {item.isActive ? "Active" : "Inactive"}
-                    </Chip>
-                );
-            case "actions":
-                return (
-                    <div className="relative flex items-center gap-2">
-                        <Tooltip content="Edit">
-                            <span
-                                className="text-lg text-default-400 cursor-pointer active:opacity-50 hover:text-green-700 transition-colors"
-                                onClick={() => handleEdit(item)}
-                            >
-                                <PencilIcon className="w-5 h-5" />
-                            </span>
-                        </Tooltip>
-                        <Tooltip color="danger" content="Delete">
-                            <span
-                                className="text-lg text-danger cursor-pointer active:opacity-50 hover:text-red-700 transition-colors"
-                                onClick={() => handleDelete(item.id)}
-                            >
-                                <TrashIcon className="w-5 h-5" />
-                            </span>
-                        </Tooltip>
-                    </div>
-                );
-            default:
-                return cellValue;
-        }
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        setSelectedDiscount(null);
     };
 
     return (
@@ -116,11 +60,9 @@ export default function AdminDiscountsPage() {
                     <p className="text-muted mt-2">Manage promotional discounts.</p>
                 </div>
                 <Button
-                    color="success"
-                    radius="sm"
-                    className="bg-green-900 text-cream font-bold shadow-md"
+                    variant="primary"
                     startContent={<PlusIcon className="w-5 h-5" />}
-                    onPress={handleCreate}
+                    onClick={handleCreate}
                 >
                     Add Discount
                 </Button>
@@ -129,32 +71,82 @@ export default function AdminDiscountsPage() {
             <div className="bg-white p-6 rounded-xl border border-divider shadow-sm min-h-[500px]">
                 {isLoading ? (
                     <div className="flex justify-center p-12">
-                        <Spinner size="lg" color="success" />
+                        <div className="w-10 h-10 border-4 border-green-200 border-t-green-700 rounded-full animate-spin"></div>
                     </div>
                 ) : (
-                    <Table aria-label="Discounts table" removeWrapper color="success" selectionMode="none">
-                        <TableHeader>
-                            <TableColumn key="description">DESCRIPTION</TableColumn>
-                            <TableColumn key="percentage">VALUE</TableColumn>
-                            <TableColumn key="dates">DURATION</TableColumn>
-                            <TableColumn key="isActive">STATUS</TableColumn>
-                            <TableColumn key="actions" align="center">ACTIONS</TableColumn>
-                        </TableHeader>
-                        <TableBody items={data || []} emptyContent="No discounts found">
-                            {(item: any) => (
-                                <TableRow key={item.id} className="border-b border-divider last:border-0 hover:bg-gray-50 transition-colors">
-                                    {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-divider">
+                                    <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">DESCRIPTION</th>
+                                    <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">VALUE</th>
+                                    <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">DURATION</th>
+                                    <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm">STATUS</th>
+                                    <th className="py-4 px-4 font-heading font-bold text-green-900 text-sm text-center">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data?.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-muted">No discounts found</td>
+                                    </tr>
+                                ) : (
+                                    data?.map((item) => (
+                                        <tr key={item.discountId} className="border-b border-divider last:border-0 hover:bg-gray-50 transition-colors">
+                                            <td className="py-4 px-4 font-semibold text-heading text-sm max-w-xs truncate" title={item.name || ''}>
+                                                {item.name}
+                                            </td>
+                                            <td className="py-4 px-4">
+                                                <span className="font-bold text-green-700">
+                                                    {item.value.toFixed(0)}%
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4">
+                                                <div className="flex flex-col text-xs text-muted">
+                                                    <span>Start: {new Date(item.startDate).toLocaleDateString("vi-VN")}</span>
+                                                    <span>End: {new Date(item.endDate).toLocaleDateString("vi-VN")}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-4">
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${item.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
+                                                    {item.isActive ? "Active" : "Inactive"}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4">
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <button
+                                                        title="Edit"
+                                                        className="text-gray-400 hover:text-green-700 transition-colors"
+                                                        onClick={() => handleEdit(item)}
+                                                    >
+                                                        <PencilIcon className="w-5 h-5" />
+                                                    </button>
+                                                    <button
+                                                        title="Delete"
+                                                        className="text-red-400 hover:text-red-700 transition-colors"
+                                                        onClick={() => handleDelete(item.discountId)}
+                                                    >
+                                                        <TrashIcon className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
             <DiscountModal
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
+                isOpen={isModalOpen}
+                onOpenChange={handleModalClose}
                 discountToEdit={selectedDiscount}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['admin', 'discounts'] });
+                    handleModalClose();
+                }}
             />
         </div>
     );

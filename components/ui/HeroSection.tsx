@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Link } from "@heroui/react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function HeroSection() {
@@ -95,23 +95,18 @@ export default function HeroSection() {
 
             {/* Asymmetric Buttons */}
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
-              <Button
-                as={Link}
+              <Link
                 href="/products"
-                className="px-10 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all duration-500 hover:-translate-y-1 shadow-hard"
-                radius="none"
+                className="px-10 py-7 bg-green-900 text-cream font-heading font-bold text-base tracking-wide hover:bg-green-700 transition-all duration-500 hover:-translate-y-1 shadow-hard inline-flex items-center justify-center"
               >
                 KHÁM PHÁ NGAY →
-              </Button>
-              <Button
-                as={Link}
+              </Link>
+              <Link
                 href="/combos"
-                variant="bordered"
-                className="px-10 py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all duration-500 hover:-translate-y-1"
-                radius="none"
+                className="px-10 py-7 border-2 border-heading/20 text-heading font-heading font-bold text-base tracking-wide hover:bg-heading hover:text-inverse transition-all duration-500 hover:-translate-y-1 inline-flex items-center justify-center"
               >
                 COMBO TIẾT KIỆM
-              </Button>
+              </Link>
             </motion.div>
 
             {/* Editorial Stats */}

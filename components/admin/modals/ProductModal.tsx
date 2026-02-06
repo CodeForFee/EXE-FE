@@ -2,18 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
-    Input,
-    Textarea,
-    Select,
-    SelectItem,
-} from "@heroui/react";
+import Modal from "@/components/ui/Modal";
+import Button from "@/components/ui/Button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { furnitureService } from "@/lib/api/services/furniture";
 import { categoryService } from "@/lib/api/services/category";
@@ -133,12 +123,16 @@ export default function ProductModal({
                 imageUrl = await uploadService.uploadImage(selectedFile);
             }
 
+            // Ensure price and stock are numbers (though we try to handle this with type="number")
             const payload: CreateFurnitureRequest = {
                 ...data,
                 price: Number(data.price),
                 stock: Number(data.stock),
                 images: [imageUrl],
+                categoryId: String(data.categoryId) // Ensure categoryId is string
             };
+
+            // Clean up potentially empty values if needed, or backend handles validation
 
             if (productToEdit) {
                 updateMutation.mutate(payload as any);
@@ -153,185 +147,133 @@ export default function ProductModal({
         }
     };
 
+    const inputClassName = (hasError: boolean) =>
+        `w-full px-4 py-3 rounded-lg border focus:outline-none transition-colors bg-white shadow-sm ${hasError ? "border-red-500 focus:border-red-500" : "border-divider focus:border-green-700"}`;
+
     return (
         <Modal
             isOpen={isOpen}
-            onOpenChange={onOpenChange}
+            onClose={onOpenChange}
+            title={productToEdit ? "Edit Product" : "Add New Product"}
             size="2xl"
-            placement="center"
-            backdrop="blur"
-            scrollBehavior="inside"
         >
-            <ModalContent>
-                {(onClose) => (
-                    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-                        <ModalHeader className="flex flex-col gap-1 font-heading text-green-950">
-                            {productToEdit ? "Edit Product" : "Add New Product"}
-                        </ModalHeader>
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col h-full">
+                <div className="space-y-8 p-1">
+                    {/* IMAGE UPLOAD SECTION */}
+                    <div>
+                        <ImageUpload
+                            label="Product Image"
+                            value={productToEdit?.image || ""} // Initial value primarily
+                            onChange={() => { }} // Not used for manual, handled by onFileSelect
+                            onFileSelect={setSelectedFile}
+                            className="mb-2"
+                        />
+                    </div>
 
-                        <ModalBody>
-                            <div className="space-y-8 border border-divider p-8 rounded-xl bg-gray-50/50">
-                                {/* IMAGE UPLOAD SECTION */}
-                                <div>
-                                    <ImageUpload
-                                        label="Product Image"
-                                        value={productToEdit?.image || ""} // Initial value primarily
-                                        onChange={() => { }} // Not used for manual, handled by onFileSelect
-                                        onFileSelect={setSelectedFile}
-                                        className="mb-2"
-                                    />
-                                    {/* Show validation error if needed? For now optional or checked at submit */}
-                                </div>
+                    {/* FORM FIELDS */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700">Product Name</label>
+                            <input
+                                {...register("name", { required: "Name is required" })}
+                                className={inputClassName(!!errors.name)}
+                                placeholder="Enter product name"
+                            />
+                            {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+                        </div>
 
-                                {/* FORM FIELDS */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Product Name</label>
-                                        <Input
-                                            {...register("name", { required: "Name is required" })}
-                                            placeholder=""
-                                            variant="bordered"
-                                            isInvalid={!!errors.name}
-                                            errorMessage={errors.name?.message}
-                                            classNames={{
-                                                inputWrapper: "bg-white shadow-sm",
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-                                        <Controller
-                                            name="categoryId"
-                                            control={control}
-                                            rules={{ required: "Category is required" }}
-                                            render={({ field }) => (
-                                                <Select
-                                                    placeholder="Select category"
-                                                    variant="bordered"
-                                                    isInvalid={!!errors.categoryId}
-                                                    errorMessage={errors.categoryId?.message}
-                                                    selectedKeys={field.value ? [String(field.value)] : []}
-                                                    onSelectionChange={(keys) => {
-                                                        const first = Array.from(keys)[0];
-                                                        field.onChange(first ? String(first) : "");
-                                                    }}
-                                                    classNames={{
-                                                        trigger: "bg-white shadow-sm",
-                                                    }}
-                                                    selectionMode="single"
-                                                >
-                                                    {(categories || []).map((cat: any) => (
-                                                        <SelectItem key={String(cat.categoryId)}>
-                                                            {cat.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </Select>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Price (VND)</label>
-                                        <Input
-                                            {...register("price", {
-                                                required: "Price is required",
-                                                min: { value: 0, message: "Price must be >= 0" }
-                                            })}
-                                            placeholder=""
-                                            type="number"
-                                            variant="bordered"
-                                            isInvalid={!!errors.price}
-                                            errorMessage={errors.price?.message}
-                                            classNames={{
-                                                inputWrapper: "bg-white shadow-sm",
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity</label>
-                                        <Input
-                                            {...register("stock", {
-                                                required: "Stock is required",
-                                                min: { value: 0, message: "Stock must be >= 0" }
-                                            })}
-                                            placeholder=""
-                                            type="number"
-                                            variant="bordered"
-                                            isInvalid={!!errors.stock}
-                                            errorMessage={errors.stock?.message}
-                                            classNames={{
-                                                inputWrapper: "bg-white shadow-sm",
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                    <Controller
-                                        name="status"
-                                        control={control}
-                                        rules={{ required: "Status is required" }}
-                                        render={({ field }) => (
-                                            <Select
-                                                placeholder="Select status"
-                                                variant="bordered"
-                                                selectedKeys={field.value ? [field.value] : ["AVAILABLE"]}
-                                                onSelectionChange={(keys) => {
-                                                    const first = Array.from(keys)[0] as string;
-                                                    field.onChange(first);
-                                                }}
-                                                classNames={{
-                                                    trigger: "bg-white shadow-sm",
-                                                }}
-                                                selectionMode="single"
-                                                disallowEmptySelection
-                                            >
-                                                <SelectItem key="AVAILABLE">Available</SelectItem>
-                                                <SelectItem key="OUT_OF_STOCK">Out of Stock</SelectItem>
-                                                <SelectItem key="DISCONTINUED">Discontinued</SelectItem>
-                                            </Select>
-                                        )}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                    <Textarea
-                                        {...register("description", { required: "Description is required" })}
-                                        placeholder=""
-                                        variant="bordered"
-                                        minRows={4}
-                                        isInvalid={!!errors.description}
-                                        errorMessage={errors.description?.message}
-                                        classNames={{
-                                            inputWrapper: "bg-white shadow-sm",
-                                            input: "min-h-[120px]"
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </ModalBody>
-
-                        <ModalFooter>
-                            <Button color="danger" variant="light" onPress={onClose} disabled={isUploading}>
-                                Cancel
-                            </Button>
-                            <Button
-                                className="bg-green-900 text-white font-bold shadow-lg"
-                                type="submit"
-                                isLoading={isUploading || createMutation.isPending || updateMutation.isPending}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700">Category</label>
+                            <select
+                                {...register("categoryId", { required: "Category is required" })}
+                                className={inputClassName(!!errors.categoryId)}
                             >
-                                {productToEdit ? "Update Product" : "Create Product"}
-                            </Button>
-                        </ModalFooter>
-                    </form>
-                )}
-            </ModalContent>
+                                <option value="" disabled>Select category</option>
+                                {(categories || []).map((cat: any) => (
+                                    <option key={String(cat.categoryId)} value={String(cat.categoryId)}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700">Price (VND)</label>
+                            <input
+                                {...register("price", {
+                                    required: "Price is required",
+                                    min: { value: 0, message: "Price must be >= 0" }
+                                })}
+                                type="number"
+                                className={inputClassName(!!errors.price)}
+                                placeholder="0"
+                            />
+                            {errors.price && <p className="text-xs text-red-500">{errors.price.message}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700">Stock Quantity</label>
+                            <input
+                                {...register("stock", {
+                                    required: "Stock is required",
+                                    min: { value: 0, message: "Stock must be >= 0" }
+                                })}
+                                type="number"
+                                className={inputClassName(!!errors.stock)}
+                                placeholder="0"
+                            />
+                            {errors.stock && <p className="text-xs text-red-500">{errors.stock.message}</p>}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Status</label>
+                        <select
+                            {...register("status", { required: "Status is required" })}
+                            className={inputClassName(!!errors.status)}
+                        >
+                            <option value="AVAILABLE">Available</option>
+                            <option value="OUT_OF_STOCK">Out of Stock</option>
+                            <option value="DISCONTINUED">Discontinued</option>
+                        </select>
+                        {errors.status && <p className="text-xs text-red-500">{errors.status.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Description</label>
+                        <textarea
+                            {...register("description", { required: "Description is required" })}
+                            rows={4}
+                            className={`${inputClassName(!!errors.description)} min-h-[120px]`}
+                            placeholder="Enter product description"
+                        />
+                        {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-divider">
+                    <Button
+                        variant="ghost"
+                        type="button"
+                        onClick={onOpenChange}
+                        disabled={isUploading}
+                        className="text-red-600 hover:bg-red-50"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        isLoading={isUploading || createMutation.isPending || updateMutation.isPending}
+                        className="bg-green-900 shadow-lg"
+                    >
+                        {productToEdit ? "Update Product" : "Create Product"}
+                    </Button>
+                </div>
+            </form>
         </Modal>
     );
 }

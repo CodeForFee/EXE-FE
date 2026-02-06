@@ -2,22 +2,14 @@
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-// import { products } from "@/lib/data/products"; // Removing static data
 import { motion } from "framer-motion";
 import ProductsClient from "@/components/product/ProductsClient";
 import * as Framer from "framer-motion";
 import { useProductStore } from "@/lib/stores/useProductStore";
-import { useEffect } from "react";
-import { Product } from "@/lib/data/products"; // Import Product type
-
-const categories = [
-    { value: "all", label: "Tất cả" },
-    { value: "desk", label: "Bàn làm việc" },
-    { value: "chair", label: "Ghế" },
-    { value: "lighting", label: "Đèn" },
-    { value: "storage", label: "Kệ & Tủ" },
-    { value: "decoration", label: "Trang trí" },
-];
+import { useEffect, useState } from "react";
+import { Product } from "@/lib/data/products";
+import { categoryService } from "@/lib/api/services/category";
+import type { CategoryResponse } from "@/lib/api/types";
 
 const sortOptions = [
     { value: "newest", label: "Mới nhất" },
@@ -32,14 +24,36 @@ const sortOptions = [
 
 export default function ProductsPage() {
     const { products, fetchProducts, isLoading } = useProductStore();
+    const [categories, setCategories] = useState<{ value: string; label: string }[]>([
+        { value: "all", label: "Tất cả" },
+    ]);
 
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
 
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const data: CategoryResponse[] = await categoryService.getAllCategoriesNoPaging();
+                setCategories([
+                    { value: "all", label: "Tất cả" },
+                    ...data.map((cat) => ({
+                        value: cat.name,
+                        label: cat.name,
+                    })),
+                ]);
+            } catch (error) {
+                console.error("Failed to load categories", error);
+            }
+        };
+
+        loadCategories();
+    }, []);
+
     // Mapping FurnitureResponse to Product type expected by ProductsClient
-    const mappedProducts: Product[] = products.map(p => ({
-        id: p.id,
+    const mappedProducts: Product[] = products.map((p) => ({
+        id: p.furnitureId,
         title: p.name, // 'name' mapped to 'title'
         price: p.finalPrice || p.price,
         originalPrice: p.price !== p.finalPrice ? p.price : undefined,
@@ -49,7 +63,8 @@ export default function ProductsPage() {
         rating: 5, // Mock default
         reviews: 0, // Mock default
         badge: p.discountPercentage ? "Giảm giá" : undefined, // Mock badge
-        category: p.categoryName ? (p.categoryName.toLowerCase() === 'chair' ? 'chair' : 'furniture') : "furniture", // Simple mapping
+        // Dùng đúng tên danh mục từ BE để khớp với filter categories
+        category: p.categoryName || "Khác",
         tags: ["furniture"], // Mock tags
         shortDescription: p.description ? p.description.substring(0, 100) + "..." : "Mô tả sản phẩm",
         description: p.description || "Chi tiết sản phẩm đang được cập nhật.",

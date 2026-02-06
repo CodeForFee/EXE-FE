@@ -1,18 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import {
-    Button,
-    Input,
-    Avatar,
-    Card,
-    CardBody,
-    Tabs,
-    Tab,
-    Spacer,
-    Divider
-} from "@heroui/react";
-import { useUserStore } from "@/lib/stores/useUserStore";
+import { useSessionStore } from "@/lib/stores/useSessionStore";
 import { useLoadingStore } from "@/lib/stores/useLoadingStore";
 import { UserRequest, UserResponse, ChangePasswordRequest } from "@/lib/api/types";
 import { userService } from "@/lib/api/services/user";
@@ -20,12 +9,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ArrowLeft, CameraIcon, UserIcon, ShieldCheckIcon, UploadCloud } from "lucide-react";
 import Link from "next/link";
-import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 export default function ProfilePage() {
-    const { user, fetchUser } = useUserStore();
+    const user = useSessionStore((state) => state.user);
+    const setSession = useSessionStore((state) => state.setSession);
+    const accessToken = useSessionStore((state) => state.accessToken);
     const { setIsLoading } = useLoadingStore();
     const queryClient = useQueryClient();
 
@@ -43,6 +33,8 @@ export default function ProfilePage() {
         confirmPassword: ""
     });
 
+    const [activeTab, setActiveTab] = React.useState<"personal" | "security">("personal");
+
     // Sync user data to form when user loads
     useEffect(() => {
         if (user) {
@@ -52,10 +44,8 @@ export default function ProfilePage() {
                 address: user.address || "",
                 image: user.image || ""
             });
-        } else {
-            fetchUser();
         }
-    }, [user, fetchUser]);
+    }, [user]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -96,7 +86,17 @@ export default function ProfilePage() {
         },
         onSuccess: async (updatedUser) => {
             toast.success("Cập nhật hồ sơ thành công!");
-            await fetchUser(); // Refresh store
+            // Refresh user data by fetching full profile
+            if (user?.id && accessToken) {
+                try {
+                    const fullUser = await userService.getUserById(user.id);
+                    // Note: User data in session is from JWT, can't update directly
+                    // User will see updates on next login or page refresh
+                    queryClient.invalidateQueries({ queryKey: ['user', user.id] });
+                } catch (error) {
+                    console.error("Failed to refresh user:", error);
+                }
+            }
             setIsLoading(false);
         },
         onError: (error: any) => {
@@ -168,8 +168,8 @@ export default function ProfilePage() {
                 >
                     {/* Left Sidebar: User Card */}
                     <div className="md:col-span-4 lg:col-span-3">
-                        <Card className="bg-white/80 backdrop-blur-md border border-divider shadow-medium sticky top-24">
-                            <CardBody className="flex flex-col items-center py-8 text-center bg-wood-light/10">
+                        <div className="bg-white/80 backdrop-blur-md border border-divider shadow-medium sticky top-24 rounded-2xl overflow-hidden">
+                            <div className="flex flex-col items-center py-8 text-center bg-wood-light/10">
                                 <div className="relative group">
                                     {(formData.image || user.image) ? (
                                         <img
@@ -178,10 +178,9 @@ export default function ProfilePage() {
                                             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mb-4 bg-green-900"
                                         />
                                     ) : (
-                                        <Avatar
-                                            className="w-32 h-32 text-4xl font-bold bg-green-900 text-cream mb-4 border-4 border-white shadow-lg"
-                                            name={user.fullName?.charAt(0)}
-                                        />
+                                        <div className="w-32 h-32 rounded-full text-4xl font-bold bg-green-900 text-cream mb-4 border-4 border-white shadow-lg flex items-center justify-center">
+                                            {user.fullName?.charAt(0)}
+                                        </div>
                                     )}
                                     <label className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <CameraIcon className="text-white w-8 h-8" />
@@ -209,173 +208,133 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Right Content: Tabs & Forms */}
-                    <div className="md:col-span-8 lg:col-span-9">
-                        <Card className="bg-white shadow-medium border border-divider min-h-[500px]">
-                            <CardBody className="p-0">
-                                <Tabs
-                                    aria-label="Options"
-                                    color="success"
-                                    variant="underlined"
-                                    classNames={{
-                                        tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider px-6",
-                                        cursor: "w-full bg-green-900",
-                                        tab: "max-w-fit px-0 h-14",
-                                        tabContent: "group-data-[selected=true]:text-green-900 font-heading font-semibold text-base"
-                                    }}
-                                >
-                                    <Tab
-                                        key="personal"
-                                        title={
-                                            <div className="flex items-center space-x-2">
-                                                <UserIcon size={18} />
-                                                <span>Thông tin cá nhân</span>
-                                            </div>
-                                        }
-                                    >
-                                        <form onSubmit={handleUpdateProfile} className="p-6 md:p-8 space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-semibold text-green-900">Họ và tên</label>
-                                                    <Input
-                                                        aria-label="Full Name"
-                                                        value={formData.fullName}
-                                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                                        variant="bordered"
-                                                        radius="sm"
-                                                        classNames={{
-                                                            inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-semibold text-green-900">Số điện thoại</label>
-                                                    <Input
-                                                        aria-label="Phone"
-                                                        value={formData.phone}
-                                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                        variant="bordered"
-                                                        radius="sm"
-                                                        placeholder="Chưa cập nhật"
-                                                        classNames={{
-                                                            inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
+                    <div className="md:col-span-8 lg:col-span-9 bg-white shadow-medium border border-divider min-h-[500px] rounded-2xl overflow-hidden flex flex-col">
+                        {/* Tabs Header */}
+                        <div className="flex w-full border-b border-divider">
+                            <button
+                                onClick={() => setActiveTab("personal")}
+                                className={`flex-1 py-4 text-center font-heading font-semibold text-base transition-colors relative flex items-center justify-center gap-2 ${activeTab === "personal" ? "text-green-900 bg-green-50" : "text-muted hover:text-green-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <UserIcon size={18} />
+                                <span>Thông tin cá nhân</span>
+                                {activeTab === "personal" && (
+                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-green-900" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("security")}
+                                className={`flex-1 py-4 text-center font-heading font-semibold text-base transition-colors relative flex items-center justify-center gap-2 ${activeTab === "security" ? "text-green-900 bg-green-50" : "text-muted hover:text-green-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <ShieldCheckIcon size={18} />
+                                <span>Bảo mật</span>
+                                {activeTab === "security" && (
+                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-green-900" />
+                                )}
+                            </button>
+                        </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-semibold text-green-900">Email (Không thể thay đổi)</label>
-                                                <Input
-                                                    aria-label="Email"
-                                                    value={user.email}
-                                                    readOnly
-                                                    disabled
-                                                    variant="flat"
-                                                    radius="sm"
-                                                    className="opacity-70"
-                                                />
-                                            </div>
+                        {/* Tabs Content */}
+                        <div className="p-6 md:p-8">
+                            {activeTab === "personal" ? (
+                                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-green-900">Họ và tên</label>
+                                            <input
+                                                value={formData.fullName}
+                                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                                className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-green-900">Số điện thoại</label>
+                                            <input
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                placeholder="Chưa cập nhật"
+                                                className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                            />
+                                        </div>
+                                    </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-semibold text-green-900">Địa chỉ giao hàng</label>
-                                                <Input
-                                                    aria-label="Address"
-                                                    value={formData.address}
-                                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                                    variant="bordered"
-                                                    radius="sm"
-                                                    placeholder="Nhập địa chỉ của bạn"
-                                                    classNames={{
-                                                        inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                    }}
-                                                />
-                                            </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-green-900">Email (Không thể thay đổi)</label>
+                                        <input
+                                            value={user.email}
+                                            readOnly
+                                            disabled
+                                            className="w-full px-4 py-3 rounded-lg border border-divider bg-gray-100 opacity-70 cursor-not-allowed"
+                                        />
+                                    </div>
 
-                                            <div className="flex justify-end pt-4">
-                                                <Button
-                                                    type="submit"
-                                                    className="bg-green-900 text-cream font-heading font-bold shadow-soft hover:bg-green-700 transition-all"
-                                                    isLoading={updateProfileMutation.isPending}
-                                                    radius="sm"
-                                                    size="lg"
-                                                >
-                                                    Lưu thay đổi
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </Tab>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-green-900">Địa chỉ giao hàng</label>
+                                        <input
+                                            value={formData.address}
+                                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                            placeholder="Nhập địa chỉ của bạn"
+                                            className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                        />
+                                    </div>
 
-                                    <Tab
-                                        key="security"
-                                        title={
-                                            <div className="flex items-center space-x-2">
-                                                <ShieldCheckIcon size={18} />
-                                                <span>Bảo mật</span>
-                                            </div>
-                                        }
-                                    >
-                                        <form onSubmit={handleChangePassword} className="p-6 md:p-8 space-y-6 max-w-lg">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-semibold text-green-900">Mật khẩu hiện tại</label>
-                                                <Input
-                                                    type="password"
-                                                    value={passData.currentPassword}
-                                                    onChange={(e) => setPassData({ ...passData, currentPassword: e.target.value })}
-                                                    variant="bordered"
-                                                    radius="sm"
-                                                    classNames={{
-                                                        inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-semibold text-green-900">Mật khẩu mới</label>
-                                                <Input
-                                                    type="password"
-                                                    value={passData.newPassword}
-                                                    onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
-                                                    variant="bordered"
-                                                    radius="sm"
-                                                    classNames={{
-                                                        inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-semibold text-green-900">Xác nhận mật khẩu mới</label>
-                                                <Input
-                                                    type="password"
-                                                    value={passData.confirmPassword}
-                                                    onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
-                                                    variant="bordered"
-                                                    radius="sm"
-                                                    classNames={{
-                                                        inputWrapper: "border-divider focus-within:border-green-700 bg-main/30",
-                                                    }}
-                                                />
-                                            </div>
+                                    <div className="flex justify-end pt-4">
+                                        <button
+                                            type="submit"
+                                            disabled={updateProfileMutation.isPending}
+                                            className="px-8 py-3 bg-green-900 text-cream font-heading font-bold rounded-lg shadow-soft hover:bg-green-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {updateProfileMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleChangePassword} className="space-y-6 max-w-lg mx-auto">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-green-900">Mật khẩu hiện tại</label>
+                                        <input
+                                            type="password"
+                                            value={passData.currentPassword}
+                                            onChange={(e) => setPassData({ ...passData, currentPassword: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-green-900">Mật khẩu mới</label>
+                                        <input
+                                            type="password"
+                                            value={passData.newPassword}
+                                            onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-green-900">Xác nhận mật khẩu mới</label>
+                                        <input
+                                            type="password"
+                                            value={passData.confirmPassword}
+                                            onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-lg border border-divider focus:border-green-700 focus:outline-none transition-colors bg-main/30"
+                                        />
+                                    </div>
 
-                                            <div className="flex justify-start pt-4">
-                                                <Button
-                                                    type="submit"
-                                                    className="bg-wood-medium text-white font-heading font-bold shadow-soft hover:bg-wood-dark transition-all"
-                                                    isLoading={changePasswordMutation.isPending}
-                                                    radius="sm"
-                                                    size="lg"
-                                                >
-                                                    Đổi mật khẩu
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </Tab>
-                                </Tabs>
-                            </CardBody>
-                        </Card>
+                                    <div className="flex justify-start pt-4">
+                                        <button
+                                            type="submit"
+                                            disabled={changePasswordMutation.isPending}
+                                            className="px-8 py-3 bg-wood-medium text-white font-heading font-bold rounded-lg shadow-soft hover:bg-wood-dark transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {changePasswordMutation.isPending ? "Đang xử lý..." : "Đổi mật khẩu"}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
                     </div>
                 </motion.div>
             </div>

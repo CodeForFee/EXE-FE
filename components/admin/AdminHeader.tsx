@@ -1,18 +1,44 @@
 "use client";
 
-import { useUserStore } from "@/lib/stores/useUserStore";
-import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
+import { useSessionStore } from "@/lib/stores/useSessionStore";
+import { authService } from "@/lib/api/services/auth";
 import { useRouter } from "next/navigation";
 import { ArrowLeftOnRectangleIcon, BellIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { useState, useRef, useEffect } from "react";
 
 export default function AdminHeader() {
-    const { user, logout } = useUserStore();
+    const user = useSessionStore((state) => state.user);
+    const clearSession = useSessionStore((state) => state.clearSession);
     const router = useRouter();
 
-    const handleLogout = () => {
-        logout();
-        router.push("/login");
+    const handleLogout = async () => {
+        try {
+            await authService.logoutClient();
+            await authService.logoutServer();
+            clearSession();
+            router.push("/login");
+            router.refresh();
+        } catch (error) {
+            console.error("Logout error:", error);
+            clearSession();
+            router.push("/login");
+        }
     };
+
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <header className="h-20 bg-white border-b border-divider fixed top-0 right-0 left-64 z-40 px-8 flex items-center justify-between shadow-sm">
@@ -41,46 +67,64 @@ export default function AdminHeader() {
                 <div className="h-8 w-[1px] bg-divider"></div>
 
                 {/* Profile Dropdown */}
-                <Dropdown placement="bottom-end">
-                    <DropdownTrigger>
-                        <div className="flex items-center gap-3 outline-none group cursor-pointer">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-sm font-bold text-heading leading-tight group-hover:text-green-800 transition-colors">
-                                    {user?.fullName || "Admin User"}
-                                </p>
-                                <p className="text-[10px] text-muted font-heading uppercase tracking-wider">
-                                    {user?.role || "Administrator"}
-                                </p>
-                            </div>
-                            <Avatar
-                                isBordered
-                                className="transition-transform group-hover:scale-105 ring-2 ring-offset-2 ring-transparent group-hover:ring-green-100"
-                                color="success"
-                                name={user?.fullName?.charAt(0) || "A"}
-                                size="sm"
-                                src={user?.image}
-                            />
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="flex items-center gap-3 outline-none group cursor-pointer"
+                    >
+                        <div className="text-right hidden sm:block">
+                            <p className="text-sm font-bold text-heading leading-tight group-hover:text-green-800 transition-colors">
+                                {user?.fullName || "Admin User"}
+                            </p>
+                            <p className="text-[10px] text-muted font-heading uppercase tracking-wider">
+                                {user?.role || "Administrator"}
+                            </p>
                         </div>
-                    </DropdownTrigger>
-                    <DropdownMenu aria-label="Profile Actions" variant="flat" className="p-2">
-                        <DropdownItem key="profile" className="h-14 gap-2" textValue="Signed in as">
-                            <p className="font-semibold text-xs text-muted">Signed in as</p>
-                            <p className="font-semibold text-heading">{user?.email}</p>
-                        </DropdownItem>
-                        <DropdownItem key="settings" href="/admin/settings" textValue="Settings">
-                            Settings
-                        </DropdownItem>
-                        <DropdownItem key="help_and_feedback" textValue="Help & Feedback">
-                            Help & Feedback
-                        </DropdownItem>
-                        <DropdownItem key="logout" color="danger" onPress={handleLogout} textValue="Log Out">
-                            <div className="flex items-center gap-2">
-                                <ArrowLeftOnRectangleIcon className="w-4 h-4" />
-                                Log Out
+                        {user?.image ? (
+                            <img
+                                src={user.image}
+                                alt="Profile"
+                                className="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-green-100 transition-colors"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center border-2 border-transparent group-hover:border-green-200 transition-colors">
+                                {user?.fullName?.charAt(0) || "A"}
                             </div>
-                        </DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
+                        )}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isOpen && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-divider py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="px-4 py-3 border-b border-divider">
+                                <p className="text-xs text-muted font-semibold">Signed in as</p>
+                                <p className="text-sm font-bold text-heading truncate">{user?.email}</p>
+                            </div>
+                            <div className="py-1">
+                                <button
+                                    onClick={() => router.push("/admin/settings")}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    Settings
+                                </button>
+                                <button
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    Help & Feedback
+                                </button>
+                            </div>
+                            <div className="py-1 border-t border-divider">
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                >
+                                    <ArrowLeftOnRectangleIcon className="w-4 h-4" />
+                                    Log Out
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </header>
     );
