@@ -138,7 +138,7 @@ export default function AdminProductsPage() {
                                                 currency: "VND",
                                             }).format(item.finalPrice)}
                                         </p>
-                                        {item.discountPercentage > 0 && (
+                                        {(item.discountPercentage ?? 0) > 0 && (
                                             <p className="text-xs text-red-500 line-through">
                                                 {new Intl.NumberFormat("vi-VN", {
                                                     style: "currency",
@@ -152,8 +152,8 @@ export default function AdminProductsPage() {
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-block px-3 py-1 text-xs rounded-full font-medium ${item.stock > 0
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
                                                 }`}
                                         >
                                             {item.stock > 0

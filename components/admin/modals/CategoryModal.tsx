@@ -18,13 +18,13 @@ interface CategoryModalProps {
 
 export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: CategoryModalProps) {
     const queryClient = useQueryClient();
-    
-    const { 
-        register, 
-        handleSubmit, 
-        setValue, 
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
         reset,
-        formState: { errors } 
+        formState: { errors }
     } = useForm<CreateCategoryRequest>({
         defaultValues: {
             name: "",
@@ -70,7 +70,7 @@ export default function CategoryModal({ isOpen, onOpenChange, categoryToEdit }: 
             reset();
             onOpenChange();
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(error.message || "Không thể cập nhật danh mục");
         }
     });

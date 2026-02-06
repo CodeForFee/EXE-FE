@@ -76,7 +76,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 const relatedData = await furnitureService.getFurnitureByCategory(productData.categoryId);
                 // Filter out current product and map
                 recommendedProducts = relatedData
-                    .filter(p => p.id !== productData.id)
+                    .filter(p => p.furnitureId !== productData.furnitureId)
                     .slice(0, 5)
                     .map(mapToProduct);
             }

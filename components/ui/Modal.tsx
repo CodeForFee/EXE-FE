@@ -31,10 +31,10 @@ export default function Modal({
         return () => setMounted(false);
     }, []);
 
-    const handleClose = () => {
+    const handleClose = React.useCallback(() => {
         if (onClose) onClose();
         if (onOpenChange) onOpenChange();
-    };
+    }, [onClose, onOpenChange]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,7 +72,7 @@ export default function Modal({
             />
             <div className={`relative bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 ${className}`}>
                 {/* Header */}
-                {(title || handleClose) && (
+                {(title || onClose || onOpenChange) && (
                     <div className="flex items-center justify-between px-6 py-4 border-b border-divider">
                         {title && <h3 className="text-xl font-heading font-bold text-green-950">{title}</h3>}
                         <button

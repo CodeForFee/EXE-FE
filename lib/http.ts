@@ -3,10 +3,11 @@ import { ApiResponse } from "@/lib/api/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-interface CustomOptions extends RequestInit {
+interface CustomOptions extends Omit<RequestInit, 'body'> {
     baseURL?: string | undefined;
     params?: Record<string, string | number | boolean | undefined>;
     skipAuth?: boolean;
+    body?: BodyInit | object | null;
 }
 
 interface ErrorResponse {
@@ -261,18 +262,18 @@ const http = {
 
     post<T>(
         url: string,
-        body: any,
+        body: unknown,
         options?: Omit<CustomOptions, "body">
     ) {
-        return httpRequest<T>("POST", url, { ...options, body });
+        return httpRequest<T>("POST", url, { ...options, body: body as BodyInit | object });
     },
 
     put<T>(
         url: string,
-        body: any,
+        body: unknown,
         options?: Omit<CustomOptions, "body">
     ) {
-        return httpRequest<T>("PUT", url, { ...options, body });
+        return httpRequest<T>("PUT", url, { ...options, body: body as BodyInit | object });
     },
 
     delete<T>(url: string, options?: Omit<CustomOptions, "body">) {
@@ -281,10 +282,10 @@ const http = {
 
     patch<T>(
         url: string,
-        body: any,
+        body: unknown,
         options?: Omit<CustomOptions, "body">
     ) {
-        return httpRequest<T>("PATCH", url, { ...options, body });
+        return httpRequest<T>("PATCH", url, { ...options, body: body as BodyInit | object });
     },
 };
 

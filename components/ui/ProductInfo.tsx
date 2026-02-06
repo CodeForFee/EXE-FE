@@ -1,6 +1,6 @@
-\"use client\";\r
-\r
-import { Product } from \"@/lib/data/products\";\r
+"use client";
+
+import { Product } from "@/lib/data/products";
 import { motion } from "framer-motion";
 
 interface ProductInfoProps {
