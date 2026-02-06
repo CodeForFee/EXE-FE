@@ -28,7 +28,7 @@ export default function ProductModal({
     productToEdit,
 }: ProductModalProps) {
     const queryClient = useQueryClient();
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
     const [isUploading, setIsUploading] = useState(false);
 
     const {
@@ -57,23 +57,24 @@ export default function ProductModal({
     });
 
     useEffect(() => {
-        // Khi mở modal, set form state đúng theo mode edit/create
         if (!isOpen) {
-            setSelectedFile(null);
+            setUploadedImageUrl("");
             return;
         }
 
         if (productToEdit) {
+            setUploadedImageUrl(productToEdit.primaryImageUrl || productToEdit.image || "");
             reset({
                 name: productToEdit.name ?? "",
                 description: productToEdit.description ?? "",
                 price: Number(productToEdit.price ?? 0),
                 stock: Number(productToEdit.stock ?? 0),
                 categoryId: String(productToEdit.categoryId ?? ""),
-                images: [productToEdit.image ?? ""],
+                images: [productToEdit.primaryImageUrl || productToEdit.image || ""],
                 status: (productToEdit as any).status ?? "AVAILABLE",
             });
         } else {
+            setUploadedImageUrl("");
             reset({
                 name: "",
                 description: "",
@@ -84,64 +85,72 @@ export default function ProductModal({
                 status: "AVAILABLE",
             });
         }
-        setSelectedFile(null); // Reset file selection on open
     }, [productToEdit, reset, isOpen]);
 
     const createMutation = useMutation({
         mutationFn: (data: CreateFurnitureRequest) => furnitureService.createFurniture(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "furniture"] });
-            toast.success("Product created successfully");
-            onOpenChange();
-            reset();
-        },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to create product");
-        },
     });
 
     const updateMutation = useMutation({
         mutationFn: (data: UpdateFurnitureRequest) =>
             furnitureService.updateFurniture(productToEdit!.furnitureId, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin", "furniture"] });
-            toast.success("Product updated successfully");
-            onOpenChange();
-        },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to update product");
-        },
     });
 
     const onSubmit = async (data: CreateFurnitureRequest) => {
         try {
             setIsUploading(true);
-            let imageUrl = productToEdit?.image || "";
+            const finalImageUrl = uploadedImageUrl;
 
-            // If a new file is selected, upload it first
-            if (selectedFile) {
-                imageUrl = await uploadService.uploadImage(selectedFile);
-            }
-
-            // Ensure price and stock are numbers (though we try to handle this with type="number")
+            // 1. Prepare base payload (exclude images from main payload if backend relies on separate EP, but keeping for safety if hybrid)
             const payload: CreateFurnitureRequest = {
                 ...data,
                 price: Number(data.price),
                 stock: Number(data.stock),
-                images: [imageUrl],
-                categoryId: String(data.categoryId) // Ensure categoryId is string
+                categoryId: String(data.categoryId),
+                images: [], // Clear images from payload as we use separate EP
+                primaryImageUrl: undefined // Clear primaryImageUrl
             };
 
-            // Clean up potentially empty values if needed, or backend handles validation
+            let furnitureId: string | undefined;
 
+            // 2. Perform Create or Update
             if (productToEdit) {
-                updateMutation.mutate(payload as any);
+                furnitureId = productToEdit.furnitureId;
+                await updateMutation.mutateAsync({ ...payload });
             } else {
-                createMutation.mutate(payload);
+                const newProduct = await createMutation.mutateAsync(payload);
+                furnitureId = newProduct.furnitureId;
             }
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            toast.error("Failed to upload image or save product.");
+
+            // 3. Handle Image via separate API if we have an image and a valid ID
+            if (furnitureId && finalImageUrl) {
+                // Check if image is new or changed. For simplicity, we can just add it as primary.
+                // The new endpoint: addImages(id, [{ imageUrl, isPrimary: true, displayOrder: 0 }])
+                // Only add if it's a new URL or we want to ensure it's primary.
+                // For "Update", if the URL is the same as before, maybe we skip or still enforce it? 
+                // Let's enforce it to ensure consistency.
+
+                // Note: If updating, user might want to optimize to not re-upload/re-link if same.
+                // But `addImages` might strictly append. 
+                // If it's a new upload, `finalImageUrl` is definitely different (or at least valid).
+
+                await furnitureService.addImages(furnitureId, [{
+                    imageUrl: finalImageUrl,
+                    isPrimary: true,
+                    displayOrder: 0
+                }]);
+            }
+
+            // 4. Success handling
+            queryClient.invalidateQueries({ queryKey: ["admin", "furniture"] });
+            toast.success(productToEdit ? "Product updated successfully" : "Product created successfully");
+            onOpenChange();
+            reset();
+
+        } catch (error: any) {
+            console.error("Error submitting form details:", error);
+            const msg = error?.response?.data?.message || "Failed to save product.";
+            toast.error(msg);
         } finally {
             setIsUploading(false);
         }
@@ -163,9 +172,8 @@ export default function ProductModal({
                     <div>
                         <ImageUpload
                             label="Product Image"
-                            value={productToEdit?.image || ""} // Initial value primarily
-                            onChange={() => { }} // Not used for manual, handled by onFileSelect
-                            onFileSelect={setSelectedFile}
+                            value={uploadedImageUrl}
+                            onChange={(url) => setUploadedImageUrl(url)}
                             className="mb-2"
                         />
                     </div>

@@ -97,6 +97,9 @@ export const authService = {
      * Google OAuth login - redirects to backend
      */
     googleLogin: () => {
-        window.location.href = `${API_URL}/auth/google`;
+        // Try to tell the backend where to return. 
+        // Note: The backend must be configured to accept this redirect_uri for security reasons.
+        const redirectUri = `${window.location.origin}/auth/google/callback`;
+        window.location.href = `${API_URL}/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
     }
 };

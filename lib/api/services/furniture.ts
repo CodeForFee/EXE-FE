@@ -58,5 +58,25 @@ export const furnitureService = {
             skipAuth: true
         });
         return response.data;
+    },
+
+    // Furniture Image Management
+    addImages: async (furnitureId: string, images: { imageUrl: string; isPrimary: boolean; displayOrder: number }[]): Promise<any[]> => {
+        const response = await http.post<any[]>(`/furniture/${furnitureId}/images`, images);
+        return response.data;
+    },
+
+    deleteImage: async (furnitureId: string, imageId: string): Promise<void> => {
+        await http.delete<void>(`/furniture/${furnitureId}/images/${imageId}`);
+    },
+
+    setPrimaryImage: async (furnitureId: string, imageId: string): Promise<any> => {
+        const response = await http.put<any>(`/furniture/${furnitureId}/images/${imageId}/primary`, {});
+        return response.data;
+    },
+
+    reorderImages: async (furnitureId: string, imageIds: string[]): Promise<any[]> => {
+        const response = await http.put<any[]>(`/furniture/${furnitureId}/images/reorder`, imageIds);
+        return response.data;
     }
 };
