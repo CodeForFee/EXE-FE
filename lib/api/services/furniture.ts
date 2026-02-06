@@ -14,13 +14,16 @@ export const furnitureService = {
         sortDir = 'DESC'
     ): Promise<Page<FurnitureResponse>> => {
         const response = await http.get<Page<FurnitureResponse>>('/furniture', {
-            params: { page, size, sortBy, sortDir }
+            params: { page, size, sortBy, sortDir },
+            skipAuth: true
         });
         return response.data;
     },
 
     getFurnitureById: async (id: string): Promise<FurnitureResponse> => {
-        const response = await http.get<FurnitureResponse>(`/furniture/${id}`);
+        const response = await http.get<FurnitureResponse>(`/furniture/${id}`, {
+            skipAuth: true
+        });
         return response.data;
     },
 
@@ -44,13 +47,16 @@ export const furnitureService = {
         size = 10
     ): Promise<Page<FurnitureResponse>> => {
         const response = await http.get<Page<FurnitureResponse>>('/furniture/search', {
-            params: { name, page, size }
+            params: { name, page, size },
+            skipAuth: true
         });
         return response.data;
     },
 
     getFurnitureByCategory: async (categoryId: string): Promise<FurnitureResponse[]> => {
-        const response = await http.get<FurnitureResponse[]>(`/furniture/category/${categoryId}`);
+        const response = await http.get<FurnitureResponse[]>(`/furniture/category/${categoryId}`, {
+            skipAuth: true
+        });
         return response.data;
     }
 };
